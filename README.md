@@ -51,6 +51,8 @@ python3 -m harness.cli run-agy \
 
 The provider adapter uses headless JSON output without a shell. Search results remain untrusted until the deterministic retriever captures the URL, blocks private-network targets, hashes the response, and finds the exact quote. Source capture proves provenance, not entailment: medium-risk claims require one recorded semantic verifier family, while high- and critical-risk claims require two independent verifier families before closure.
 
+The current `run-agy` path records the search provider as one semantic family. High- and critical-risk claims therefore remain fail-closed until independent reviews are supplied; provider-neutral dispatch is tracked in [issue #9](https://github.com/ed3c/truth-verify-loop/issues/9).
+
 ## Memory tiers
 
 - **cold**: immutable content-addressed source, provider, and session blobs;
@@ -62,6 +64,7 @@ Runtime memory is written under `.tvlake/` and is not committed.
 ## Layout
 
 - [architecture and harness contract](docs/architecture/agentic-data-lake-mvp.md)
+- [implementation map and production sequence](docs/architecture/implementation-map.md)
 - [Evidence Closure decision](docs/architecture/decisions/0001-evidence-closure-not-truth-score.md)
 - [truth verification skill](skills/truth-verify-loop/SKILL.md)
 - [live harness](harness/cli.py)
@@ -73,4 +76,4 @@ Runtime memory is written under `.tvlake/` and is not committed.
 
 The clean release excludes historical runs, cached private source pages, credentials, and private evaluation corpora.
 
-License: MIT. Core delivery: [PRD #1](https://github.com/ed3c/truth-verify-loop/issues/1). Live verification MVP: [PRD #4](https://github.com/ed3c/truth-verify-loop/issues/4).
+License: MIT. Core delivery: [PRD #1](https://github.com/ed3c/truth-verify-loop/issues/1). Live verification MVP: [PRD #4](https://github.com/ed3c/truth-verify-loop/issues/4). Production roadmap: [#6](https://github.com/ed3c/truth-verify-loop/issues/6), [#7](https://github.com/ed3c/truth-verify-loop/issues/7), [#8](https://github.com/ed3c/truth-verify-loop/issues/8), [#9](https://github.com/ed3c/truth-verify-loop/issues/9), [#10](https://github.com/ed3c/truth-verify-loop/issues/10), [#11](https://github.com/ed3c/truth-verify-loop/issues/11).

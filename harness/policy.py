@@ -41,7 +41,7 @@ class RiskRequirement:
 
 
 class SourcePolicy:
-    """Classifies domains independently of the search model's labels."""
+    """Assign source authority independently of claim and search-model output."""
 
     def __init__(
         self,
@@ -120,6 +120,15 @@ class SourcePolicy:
         return cls.from_dict(json.loads(path.read_text(encoding="utf-8")))
 
     def classify(self, uri: str, *, claim: Claim | None = None) -> str:
+        """Classify one source URI from standing policy only.
+
+        `claim.trusted_domains` is intentionally not an authority input. It may guide
+        retrieval, but a claim-extraction or search agent cannot promote an unknown
+        domain to `official_doc`. The unused claim parameter preserves the provider
+        adapter interface while making the privilege boundary explicit.
+        """
+
+        _ = claim
         parsed = urlsplit(uri)
         if not parsed.hostname:
             return "unclassified"
@@ -130,9 +139,6 @@ class SourcePolicy:
         for domain in candidates:
             if hostname == domain or hostname.endswith(f".{domain}"):
                 return self.domain_classes[domain]
-        if claim and any(hostname == d or hostname.endswith(f".{d}") for d in claim.trusted_domains):
-            # Claim-level trust is an explicit owner assertion when no global mapping exists.
-            return "official_doc"
         return self.default_source_class
 
     def requirement_for(self, risk: str) -> RiskRequirement:
@@ -187,7 +193,6 @@ def decide_live_search(
     if claim.risk == "critical":
         reasons.append("critical claims always require fresh primary evidence")
 
-    # Keep the reason set stable for deterministic manifests.
     reasons = list(dict.fromkeys(reasons))
     required = bool(reasons)
     if not required:

@@ -32,8 +32,13 @@ class ProviderTests(unittest.TestCase):
         self.assertEqual(parsed.candidates[0].quote, "exact")
 
     def test_unsafe_permission_flags_are_rejected(self):
-        with self.assertRaises(ContractError):
-            AgyProvider(extra_args=("--dangerously-skip-permissions",))
+        for flag in (
+            "--dangerously-skip-permissions",
+            "--dangerously-skip-permissions=true",
+            "--yolo=true",
+        ):
+            with self.subTest(flag=flag), self.assertRaises(ContractError):
+                AgyProvider(extra_args=(flag,))
 
     def test_command_is_an_argument_vector_with_redactable_prompt(self):
         provider = AgyProvider(model="fast", effort="low")

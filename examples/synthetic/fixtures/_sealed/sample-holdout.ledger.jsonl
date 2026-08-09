@@ -1,0 +1,1 @@
+{"mutation_id":"m-01","claim_hint":"800 requests","true_type":"TYPE_A","expected_verdict":"REFUTED","mutation_kind":"mechanical","author_family":"script","original":"80 requests","mutated":"800 requests"}

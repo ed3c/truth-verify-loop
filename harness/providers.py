@@ -115,7 +115,9 @@ class AgyProvider:
             "--dangerously-skip-permissions",
             "--yolo",
         }
-        blocked = sorted(set(extra_args) & reserved)
+        blocked = sorted(
+            arg for arg in extra_args if arg.split("=", 1)[0] in reserved
+        )
         if blocked:
             raise ContractError(f"reserved or unsafe provider arguments are forbidden: {blocked}")
         if model is not None and (not model.strip() or model.startswith("-")):

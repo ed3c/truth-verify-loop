@@ -39,7 +39,7 @@ python3 -m harness.cli decide \
 
 ## Run with Antigravity CLI
 
-Authenticate `agy` outside this repository, then run:
+Authenticate `agy` outside this repository and use a build that supports structured output with `--json-schema` and typed terminal `result` events. Then run:
 
 ```bash
 python3 -m harness.cli run-agy \
@@ -49,9 +49,11 @@ python3 -m harness.cli run-agy \
   --lake .tvlake
 ```
 
-The provider adapter uses headless JSON output without a shell. Search results remain untrusted until the deterministic retriever captures the URL, blocks private-network targets, hashes the response, and finds the exact quote. Source capture proves provenance, not entailment: medium-risk claims require one recorded semantic verifier family, while high- and critical-risk claims require two independent verifier families before closure.
+The provider adapter uses a non-shell argument vector, pins the `tvl.search-result.v1` output schema, and accepts candidates only from the terminal provider result. `step_update`, tool output, and fetched-page text cannot become the final result envelope. Candidate sources remain untrusted until the deterministic retriever captures the URL, blocks private-network targets, hashes the response, and finds the exact quote.
 
-The current `run-agy` path records the search provider as one semantic family. High- and critical-risk claims therefore remain fail-closed until independent reviews are supplied; provider-neutral dispatch is tracked in [issue #9](https://github.com/ed3c/truth-verify-loop/issues/9).
+Source capture proves provenance, not entailment. Medium-risk claims require one recorded semantic verifier family, while high- and critical-risk claims require two independent verifier families before closure. The current `run-agy` path records the search provider as one semantic family, so high- and critical-risk claims remain fail-closed until independent reviews are supplied; provider-neutral dispatch is tracked in [issue #9](https://github.com/ed3c/truth-verify-loop/issues/9).
+
+Source authority comes only from `config/source-policy.example.json`. Claim-level `trusted_domains` can guide retrieval but cannot promote an unknown domain to an official or primary source class.
 
 ## Memory tiers
 
@@ -59,7 +61,12 @@ The current `run-agy` path records the search provider as one semantic family. H
 - **warm**: append-only hash-chained claims, evidence, revisions, retrievals, and closures;
 - **hot**: rebuildable SQLite current-state and full-text projection.
 
-Runtime memory is written under `.tvlake/` and is not committed.
+Runtime memory is written under `.tvlake/` and is not committed. Rebuild the disposable hot projection from validated canonical ledgers without rewriting them:
+
+```bash
+python3 -m harness.cli rebuild-hot --lake .tvlake
+python3 -m harness.cli search-hot --lake .tvlake --query Python
+```
 
 ## Layout
 
@@ -67,7 +74,8 @@ Runtime memory is written under `.tvlake/` and is not committed.
 - [implementation map and production sequence](docs/architecture/implementation-map.md)
 - [Evidence Closure decision](docs/architecture/decisions/0001-evidence-closure-not-truth-score.md)
 - [truth verification skill](skills/truth-verify-loop/SKILL.md)
-- [live harness](harness/cli.py)
+- [live harness CLI](harness/cli.py)
+- [deterministic hot replay](harness/lake_rebuild.py)
 - [portable schemas](schemas)
 - [source authority policy](config/source-policy.example.json)
 - [deterministic core](core/tv-score.py)

@@ -11,6 +11,7 @@ from .model import ContractError, canonical_json, format_timestamp, sha256_bytes
 
 class DocumentLakeMixin:
     def current_document_for_uri(self, source_uri: str) -> dict[str, Any] | None:
+        self.initialize()
         with self._connect() as conn:
             row = conn.execute(
                 "SELECT payload_json FROM current_documents WHERE source_uri = ?", (source_uri,)
@@ -18,6 +19,7 @@ class DocumentLakeMixin:
         return json.loads(row[0]) if row else None
 
     def upsert_document(self, snapshot: Any, chunks: Iterable[Any]) -> dict[str, Any]:
+        self.initialize()
         payload = snapshot.to_dict()
         source_blob = self.blob_path(payload["content_sha256"])
         if not source_blob.is_file():
@@ -30,6 +32,34 @@ class DocumentLakeMixin:
         for chunk in chunk_values:
             if chunk.document_id != snapshot.document_id or chunk.snapshot_id != snapshot.snapshot_id:
                 raise ContractError("document chunk does not belong to the supplied snapshot")
+
+        previous_payload = self.current_document_for_uri(snapshot.source_uri)
+        revision_event: dict[str, Any] | None = None
+        if previous_payload and previous_payload.get("snapshot_id") != snapshot.snapshot_id:
+            previous_snapshot_id = previous_payload.get("snapshot_id")
+            declared_superseded = payload.get("supersedes_snapshot_id")
+            if declared_superseded not in {None, previous_snapshot_id}:
+                raise ContractError(
+                    "document supersedes_snapshot_id does not match the current hot projection"
+                )
+            payload["supersedes_snapshot_id"] = previous_snapshot_id
+            revision_event = self.append_ledger(
+                "silver",
+                "revisions",
+                {
+                    "operation": "SUPERSEDE",
+                    "entity_type": "document_snapshot",
+                    "document_id": snapshot.document_id,
+                    "source_uri": snapshot.source_uri,
+                    "previous_snapshot_id": previous_snapshot_id,
+                    "snapshot_id": snapshot.snapshot_id,
+                    "relation": "REVISES_OR_SUPERSEDES",
+                    "previous_content_sha256": previous_payload.get("content_sha256"),
+                    "content_sha256": payload["content_sha256"],
+                    "observed_at": payload["retrieved_at"],
+                },
+            )
+
         event = self.append_ledger(
             "silver", "documents", {"operation": "UPSERT", "document": payload}
         )
@@ -124,9 +154,11 @@ class DocumentLakeMixin:
         return {
             "document_event_hash": event["event_hash"],
             "chunk_event_hashes": [item[1]["event_hash"] for item in chunk_events],
+            "revision_event_hash": revision_event["event_hash"] if revision_event else None,
         }
 
     def search_documents(self, query: str, *, limit: int = 10) -> list[dict[str, Any]]:
+        self.initialize()
         if not query.strip():
             return []
         with self._connect() as conn:

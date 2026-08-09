@@ -70,7 +70,7 @@ claim -> temporal policy -> live-search decision -------------------+
                  deterministic Evidence Closure gates
 ```
 
-The search model never assigns final authority. Its source labels are ignored and recalculated from `source-policy.example.json` plus claim-specific trusted domains.
+The search model never assigns final authority. Source labels are recalculated only from the standing `source-policy.example.json`. Claim-level `trusted_domains` may guide retrieval, but they cannot promote an unknown domain to `official_doc` or another primary class.
 
 ## 4. Memory structure
 
@@ -125,7 +125,13 @@ Hot memory contains only rebuildable current state:
 - source freshness;
 - text-search projection.
 
-Hot memory can be deleted and rebuilt from warm ledgers. It is never the canonical truth store.
+Hot memory can be deleted and rebuilt from validated warm ledgers. Rebuild does not append or rewrite canonical records:
+
+```bash
+python3 -m harness.cli rebuild-hot --lake .tvlake
+```
+
+The replay validates blob references, claim/evidence contracts, document and chunk digests, closure states, ledger hash chains, and the manifest before replacing SQLite. Only chunks belonging to each current document snapshot enter the new FTS projection.
 
 ### 4.4 Promotion and demotion
 
@@ -156,7 +162,7 @@ Each claim includes:
 - freshness SLA;
 - owner and falsifier;
 - last verified time;
-- required source classes and trusted domains;
+- required source classes and retrieval-domain hints;
 - prior closure state.
 
 ### Live-search decision rules
@@ -178,24 +184,27 @@ The harness never guesses a model cutoff. Unknown stays unknown.
 The Antigravity adapter invokes an argument vector, never a shell string:
 
 ```text
-agy --print <prompt> --output-format stream-json [--model ...] [--effort ...]
+agy --print <prompt> \
+  --output-format stream-json \
+  --json-schema <tvl.search-result.v1-schema> \
+  [--model ...] [--effort ...]
 ```
 
-Flags remain configurable because the CLI contract can evolve.
+The schema, output-format, model, effort, and permission-boundary flags cannot be overridden through generic extra arguments.
 
 The provider receipt records:
 
 - binary and reported version;
 - model and effort when supplied;
 - redacted command vector;
-- prompt and instruction-file hashes;
+- prompt, instruction-file, and output-schema hashes;
 - working directory;
 - start/end time, timeout, and exit code;
 - `stdout` and `stderr` hashes;
 - inherited environment key names and a non-reversible fingerprint;
 - token and cache-read usage when present.
 
-The requested final payload is `tvl.search-result.v1`: candidate URLs, relationships, and short verbatim quotes. A missing or malformed envelope fails closed.
+The requested final payload is `tvl.search-result.v1`: candidate URLs, relationships, and short verbatim quotes. For typed streams, the parser accepts that envelope only from the terminal `result` event. It never scans `step_update`, tool output, or fetched-page payloads for a final envelope. A missing terminal result, malformed schema, or non-zero provider exit fails closed.
 
 ## 7. Independent source capture
 
@@ -208,7 +217,7 @@ Search output is a hint. The deterministic retriever then:
 5. stores the exact response bytes in cold memory;
 6. extracts normalized text without scripts, styles, templates, SVG, or `noscript` content;
 7. checks the proposed quotation against captured text;
-8. reclassifies source authority from policy.
+8. assigns source authority from standing policy only.
 
 A search-engine snippet is not equivalent to a full source capture. High-risk closures reject `agent_grounded_snippet` evidence.
 
@@ -221,7 +230,7 @@ Schemas:
 - [`schemas/document-snapshot.v1.schema.json`](../../schemas/document-snapshot.v1.schema.json)
 - [`schemas/document-chunk.v1.schema.json`](../../schemas/document-chunk.v1.schema.json)
 
-A stable `document_id` represents one canonical URI. A `snapshot_id` pins that document to a content hash. A changed hash creates a new snapshot and records `supersedes_snapshot_id`; observing identical bytes again reuses the same snapshot identity while retrieval events preserve the new observation time.
+A stable `document_id` represents one canonical URI. A `snapshot_id` pins that document to a content hash. A changed hash creates a new snapshot, stores `supersedes_snapshot_id`, and appends a `REVISES_OR_SUPERSEDES` event to `silver/revisions.jsonl`; observing identical bytes again reuses the same snapshot identity while retrieval events preserve the new observation time.
 
 Each snapshot records source type, authority, product, version, channel, commit SHA when available, media type, retrieval and validity times, capture scope, and the cold-blob digest.
 
@@ -279,7 +288,6 @@ Risk defaults:
 - critical: primary source, full capture, two independent domains, two semantic verifier families, and live retrieval every run.
 
 These defaults are policy, not universal truth. Teams should tighten them per domain.
-
 
 ## Operational companion
 

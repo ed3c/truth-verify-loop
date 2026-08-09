@@ -1,0 +1,16 @@
+{
+  "claim_id": "python-release-status",
+  "statement": "Python 3.14 is the latest stable Python release.",
+  "risk": "medium",
+  "temporality": "dynamic",
+  "freshness_sla_seconds": 86400,
+  "scope": {
+    "product": "CPython",
+    "channel": "stable",
+    "version": "latest"
+  },
+  "owner": "runtime-platform",
+  "falsifier": "An official Python release page naming a different latest stable release.",
+  "required_source_classes": ["official_doc"],
+  "trusted_domains": ["python.org", "docs.python.org"]
+}

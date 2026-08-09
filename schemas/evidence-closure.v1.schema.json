@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/truth-verify-loop/schemas/evidence-closure.v1.schema.json",
+  "title": "Truth Verify Loop Evidence Closure v1",
+  "type": "object",
+  "required": [
+    "schema",
+    "claim_id",
+    "state",
+    "closed",
+    "as_of",
+    "gates",
+    "missing_requirements",
+    "accepted_evidence_ids"
+  ],
+  "properties": {
+    "schema": {"const": "tvl.evidence-closure.v1"},
+    "claim_id": {"type": "string", "minLength": 1},
+    "state": {"enum": ["SUPPORTED", "REFUTED", "CONFLICTED", "STALE", "UNVERIFIABLE"]},
+    "closed": {"type": "boolean"},
+    "as_of": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": ["string", "null"], "format": "date-time"},
+    "gates": {
+      "type": "object",
+      "additionalProperties": {"type": "boolean"}
+    },
+    "missing_requirements": {"type": "array", "items": {"type": "string"}},
+    "accepted_evidence_ids": {"type": "array", "items": {"type": "string"}},
+    "supporting_evidence_ids": {"type": "array", "items": {"type": "string"}},
+    "refuting_evidence_ids": {"type": "array", "items": {"type": "string"}},
+    "stale_evidence_ids": {"type": "array", "items": {"type": "string"}},
+    "invalid_evidence": {"type": "object"},
+    "authority": {"type": "object"},
+    "coverage": {"type": "object"},
+    "revision_contract": {"type": "object"},
+    "run": {"type": "object"}
+  },
+  "additionalProperties": true
+}

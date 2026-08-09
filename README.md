@@ -1,8 +1,13 @@
 # truth-verify-loop
 
-Measurable claim verification with deterministic scoring and blind fixtures.
+Measurable claim verification with deterministic scoring, blind fixtures, live source receipts, and tiered agent memory.
 
-This clean-root release contains the deterministic core, an Antigravity-compatible skill, and synthetic dev/holdout fixtures. It intentionally excludes historical runs, cached source pages, and private evaluation corpora.
+The repository separates two layers:
+
+1. the deterministic mutation, aggregation, scoring, and sealed-fixture core;
+2. an Agentic Data Lake harness that bridges model knowledge cutoffs to current technical sources.
+
+A search agent proposes evidence. It does not decide truth. The harness re-fetches cited sources, validates exact quotes, stores immutable receipts, and emits an explicit Evidence Closure: `SUPPORTED`, `REFUTED`, `CONFLICTED`, `STALE`, or `UNVERIFIABLE`.
 
 ## Verify
 
@@ -10,13 +15,62 @@ This clean-root release contains the deterministic core, an Antigravity-compatib
 bash verify.sh
 ```
 
-The suite checks claim and verdict contracts, controlled mutations, false-supported scoring, fixture blindness, and the public surface.
+The suite checks claim and verdict contracts, controlled mutations, false-supported scoring, fixture blindness, source-capture controls, memory integrity, closure gates, and the public surface.
+
+## Run the sealed Agentic Data Lake fixture
+
+```bash
+python3 -m harness.cli run-fixture \
+  --claim examples/live-search/fixture-claim.json \
+  --evidence examples/live-search/fixture-evidence.jsonl \
+  --policy config/source-policy.example.json \
+  --source examples/live-search/fixture-source.txt \
+  --receipt examples/live-search/fixture-provider-receipt.json \
+  --lake .tvlake
+```
+
+## Decide whether a current claim requires live search
+
+```bash
+python3 -m harness.cli decide \
+  --claim examples/live-search/claim.json \
+  --model-knowledge-cutoff 2025-12-01T00:00:00Z
+```
+
+## Run with Antigravity CLI
+
+Authenticate `agy` outside this repository, then run:
+
+```bash
+python3 -m harness.cli run-agy \
+  --claim examples/live-search/claim.json \
+  --policy config/source-policy.example.json \
+  --model-knowledge-cutoff 2025-12-01T00:00:00Z \
+  --lake .tvlake
+```
+
+The provider adapter uses headless JSON output without a shell. Search results remain untrusted until the deterministic retriever captures the URL, blocks private-network targets, hashes the response, and finds the exact quote. Source capture proves provenance, not entailment: medium-risk claims require one recorded semantic verifier family, while high- and critical-risk claims require two independent verifier families before closure.
+
+## Memory tiers
+
+- **cold**: immutable content-addressed source, provider, and session blobs;
+- **warm**: append-only hash-chained claims, evidence, revisions, retrievals, and closures;
+- **hot**: rebuildable SQLite current-state and full-text projection.
+
+Runtime memory is written under `.tvlake/` and is not committed.
 
 ## Layout
 
-- [skill](skills/truth-verify-loop/SKILL.md)
+- [architecture and harness contract](docs/architecture/agentic-data-lake-mvp.md)
+- [Evidence Closure decision](docs/architecture/decisions/0001-evidence-closure-not-truth-score.md)
+- [truth verification skill](skills/truth-verify-loop/SKILL.md)
+- [live harness](harness/cli.py)
+- [portable schemas](schemas)
+- [source authority policy](config/source-policy.example.json)
 - [deterministic core](core/tv-score.py)
-- [synthetic fixture](examples/synthetic/fixtures)
+- [synthetic core fixture](examples/synthetic/fixtures)
 - [fixture topology checker](scripts/check_fixture_layout.py)
 
-License: MIT. Delivery tracking: [PRD #1](https://github.com/ed3c/truth-verify-loop/issues/1).
+The clean release excludes historical runs, cached private source pages, credentials, and private evaluation corpora.
+
+License: MIT. Core delivery: [PRD #1](https://github.com/ed3c/truth-verify-loop/issues/1). Live verification MVP: [PRD #4](https://github.com/ed3c/truth-verify-loop/issues/4).

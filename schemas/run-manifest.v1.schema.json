@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/truth-verify-loop/schemas/run-manifest.v1.schema.json",
+  "title": "Truth Verify Loop Provider Run Manifest v1",
+  "type": "object",
+  "required": [
+    "provider",
+    "binary",
+    "output_format",
+    "prompt_sha256",
+    "command_redacted",
+    "cwd",
+    "started_at",
+    "ended_at",
+    "timed_out",
+    "stdout_sha256",
+    "stderr_sha256",
+    "environment_keys",
+    "environment_fingerprint",
+    "usage"
+  ],
+  "properties": {
+    "provider": {"type": "string"},
+    "binary": {"type": "string"},
+    "binary_version": {"type": ["string", "null"]},
+    "model": {"type": ["string", "null"]},
+    "effort": {"type": ["string", "null"]},
+    "output_format": {"enum": ["json", "stream-json"]},
+    "prompt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "instruction_hashes": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    },
+    "command_redacted": {"type": "array", "items": {"type": "string"}},
+    "cwd": {"type": "string"},
+    "started_at": {"type": "string", "format": "date-time"},
+    "ended_at": {"type": "string", "format": "date-time"},
+    "exit_code": {"type": ["integer", "null"]},
+    "timed_out": {"type": "boolean"},
+    "stdout_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "stderr_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "environment_keys": {"type": "array", "items": {"type": "string"}},
+    "environment_fingerprint": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "usage": {"type": "object"}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/truth-verify-loop/schemas/evidence.v1.schema.json",
+  "title": "Truth Verify Loop Evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence_id",
+    "claim_id",
+    "source_uri",
+    "source_class",
+    "relationship",
+    "quote",
+    "retrieved_at",
+    "content_sha256",
+    "quote_sha256",
+    "capture_scope",
+    "provider_receipt_sha256",
+    "citation"
+  ],
+  "properties": {
+    "evidence_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "claim_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_uri": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://"
+    },
+    "source_class": {
+      "enum": [
+        "official_doc",
+        "official_release",
+        "standard",
+        "source_code",
+        "first_party",
+        "independent",
+        "community",
+        "unclassified"
+      ]
+    },
+    "relationship": {
+      "enum": [
+        "supports",
+        "refutes",
+        "context"
+      ]
+    },
+    "quote": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retrieved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "published_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "valid_from": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "valid_to": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "content_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "quote_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "provider_receipt_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "capture_scope": {
+      "enum": [
+        "full_source",
+        "full_http_response",
+        "repository_blob",
+        "standard_snapshot",
+        "agent_grounded_snippet"
+      ]
+    },
+    "title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_domain": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "citation": {
+      "type": "object",
+      "required": [
+        "quote_verified"
+      ],
+      "properties": {
+        "quote_verified": {
+          "const": true
+        },
+        "capture_media_type": {
+          "type": "string"
+        },
+        "capture_scope": {
+          "type": "string"
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "semantic_verifier_families": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

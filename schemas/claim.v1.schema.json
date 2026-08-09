@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/truth-verify-loop/schemas/claim.v1.schema.json",
+  "title": "Truth Verify Loop Claim v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "claim_id",
+    "statement",
+    "risk",
+    "temporality",
+    "freshness_sla_seconds"
+  ],
+  "properties": {
+    "claim_id": {"type": "string", "minLength": 1},
+    "statement": {"type": "string", "minLength": 1},
+    "risk": {"enum": ["low", "medium", "high", "critical"]},
+    "temporality": {"enum": ["static", "versioned", "dynamic", "ephemeral"]},
+    "freshness_sla_seconds": {"type": "integer", "minimum": 1},
+    "scope": {"type": "object"},
+    "owner": {"type": ["string", "null"], "minLength": 1},
+    "falsifier": {"type": ["string", "null"], "minLength": 1},
+    "last_verified_at": {"type": ["string", "null"], "format": "date-time"},
+    "force_live_search": {"type": "boolean", "default": false},
+    "required_source_classes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "official_doc",
+          "official_release",
+          "standard",
+          "source_code",
+          "first_party",
+          "independent",
+          "community",
+          "unclassified"
+        ]
+      }
+    },
+    "trusted_domains": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "prior_state": {
+      "type": ["string", "null"],
+      "enum": ["SUPPORTED", "REFUTED", "CONFLICTED", "STALE", "UNVERIFIABLE", null]
+    }
+  }
+}

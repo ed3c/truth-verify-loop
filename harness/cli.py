@@ -209,6 +209,13 @@ def command_manifest(args: argparse.Namespace) -> int:
     return 0 if not failures else 2
 
 
+def command_rebuild_hot(args: argparse.Namespace) -> int:
+    lake = EvidenceLake(args.lake)
+    result = lake.rebuild_hot(require_manifest=not args.no_manifest)
+    _print(result)
+    return 0
+
+
 def command_search_hot(args: argparse.Namespace) -> int:
     lake = EvidenceLake(args.lake)
     lake.initialize()
@@ -263,6 +270,13 @@ def build_parser() -> argparse.ArgumentParser:
     manifest = subparsers.add_parser("manifest", help="write and verify MANIFEST.sha256")
     manifest.add_argument("--lake", type=Path, required=True)
     manifest.set_defaults(handler=command_manifest)
+
+    rebuild = subparsers.add_parser(
+        "rebuild-hot", help="replay canonical ledgers into a new SQLite/FTS projection"
+    )
+    rebuild.add_argument("--lake", type=Path, required=True)
+    rebuild.add_argument("--no-manifest", action="store_true")
+    rebuild.set_defaults(handler=command_rebuild_hot)
 
     search = subparsers.add_parser("search-hot", help="query current claim and document projections")
     search.add_argument("--lake", type=Path, required=True)

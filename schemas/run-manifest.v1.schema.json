@@ -7,6 +7,7 @@
     "provider",
     "binary",
     "output_format",
+    "output_schema_sha256",
     "prompt_sha256",
     "command_redacted",
     "cwd",
@@ -26,6 +27,7 @@
     "model": {"type": ["string", "null"]},
     "effort": {"type": ["string", "null"]},
     "output_format": {"enum": ["json", "stream-json"]},
+    "output_schema_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "prompt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "instruction_hashes": {
       "type": "array",

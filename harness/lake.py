@@ -6,10 +6,11 @@ SQLite is only a rebuildable hot projection; it is never the source of truth.
 
 from .lake_base import LakeBase, LakeError, ZONE_STREAMS
 from .lake_documents import DocumentLakeMixin
+from .lake_rebuild import RebuildLakeMixin
 from .lake_records import RecordLakeMixin
 
 
-class EvidenceLake(DocumentLakeMixin, RecordLakeMixin, LakeBase):
+class EvidenceLake(RebuildLakeMixin, DocumentLakeMixin, RecordLakeMixin, LakeBase):
     """Cold, warm, and hot memory facade for the verification harness."""
 
 

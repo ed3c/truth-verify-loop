@@ -34,6 +34,46 @@ DEFAULT_ENV_ALLOWLIST = (
     "SSH_AUTH_SOCK",
 )
 
+SEARCH_RESULT_JSON_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["schema", "query", "candidates"],
+    "properties": {
+        "schema": {"const": "tvl.search-result.v1"},
+        "query": {"type": "string", "minLength": 1},
+        "candidates": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 12,
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["source_uri", "relationship", "quote"],
+                "properties": {
+                    "source_uri": {"type": "string", "pattern": "^https://"},
+                    "title": {"type": ["string", "null"]},
+                    "published_at": {"type": ["string", "null"]},
+                    "relationship": {"enum": ["supports", "refutes", "context"]},
+                    "quote": {"type": "string", "minLength": 1, "maxLength": 2000},
+                },
+            },
+        },
+    },
+}
+SEARCH_RESULT_SCHEMA_JSON = canonical_json(SEARCH_RESULT_JSON_SCHEMA)
+SEARCH_RESULT_SCHEMA_SHA256 = sha256_text(SEARCH_RESULT_SCHEMA_JSON)
+TERMINAL_RESULT_KEYS = (
+    "result",
+    "response",
+    "output",
+    "structured_output",
+    "structuredOutput",
+    "data",
+    "content",
+    "text",
+)
+STREAM_EVENT_TYPES = {"init", "step_update", "result"}
+
 
 class ProviderError(RuntimeError):
     """Raised when a provider cannot produce a contract-compliant result."""
@@ -47,6 +87,7 @@ class ProviderReceipt:
     model: str | None
     effort: str | None
     output_format: str
+    output_schema_sha256: str
     prompt_sha256: str
     instruction_hashes: tuple[str, ...]
     command_redacted: tuple[str, ...]
@@ -86,8 +127,9 @@ class ProviderRun:
 class AgyProvider:
     """Subprocess adapter for Antigravity CLI headless print mode.
 
-    The output contract is configurable because the CLI is evolving. The adapter never
-    executes through a shell and never treats source-page text as instructions.
+    The adapter uses the CLI's structured-output schema and accepts a search envelope
+    only from the terminal result event. It never executes through a shell and never
+    treats source-page or tool-output text as a final provider result.
     """
 
     def __init__(
@@ -110,14 +152,13 @@ class AgyProvider:
             "--print",
             "-p",
             "--output-format",
+            "--json-schema",
             "--model",
             "--effort",
             "--dangerously-skip-permissions",
             "--yolo",
         }
-        blocked = sorted(
-            arg for arg in extra_args if arg.split("=", 1)[0] in reserved
-        )
+        blocked = sorted(arg for arg in extra_args if arg.split("=", 1)[0] in reserved)
         if blocked:
             raise ContractError(f"reserved or unsafe provider arguments are forbidden: {blocked}")
         if model is not None and (not model.strip() or model.startswith("-")):
@@ -149,7 +190,15 @@ class AgyProvider:
         return output.splitlines()[0][:300] if output else None
 
     def _command(self, prompt: str) -> list[str]:
-        command = [self.binary, "--print", prompt, "--output-format", self.output_format]
+        command = [
+            self.binary,
+            "--print",
+            prompt,
+            "--output-format",
+            self.output_format,
+            "--json-schema",
+            SEARCH_RESULT_SCHEMA_JSON,
+        ]
         if self.model:
             command.extend(["--model", self.model])
         if self.effort:
@@ -178,7 +227,14 @@ class AgyProvider:
             sha256_bytes(path.read_bytes()) for path in sorted(Path(p).resolve() for p in instruction_files)
         )
         command = self._command(prompt)
-        redacted = tuple("<prompt:sha256=" + sha256_text(prompt) + ">" if arg == prompt else arg for arg in command)
+        redacted: list[str] = []
+        for arg in command:
+            if arg == prompt:
+                redacted.append(f"<prompt:sha256={sha256_text(prompt)}>")
+            elif arg == SEARCH_RESULT_SCHEMA_JSON:
+                redacted.append(f"<output-schema:sha256={SEARCH_RESULT_SCHEMA_SHA256}>")
+            else:
+                redacted.append(arg)
         started = utc_now()
         timed_out = False
         exit_code: int | None
@@ -215,9 +271,10 @@ class AgyProvider:
             model=self.model,
             effort=self.effort,
             output_format=self.output_format,
+            output_schema_sha256=SEARCH_RESULT_SCHEMA_SHA256,
             prompt_sha256=sha256_text(prompt),
             instruction_hashes=instruction_hashes,
-            command_redacted=redacted,
+            command_redacted=tuple(redacted),
             cwd=workdir.as_posix(),
             started_at=started,
             ended_at=ended,
@@ -249,6 +306,7 @@ class FixtureProvider:
             model="sealed-fixture",
             effort=None,
             output_format="stream-json",
+            output_schema_sha256=SEARCH_RESULT_SCHEMA_SHA256,
             prompt_sha256=sha256_text("fixture"),
             instruction_hashes=(),
             command_redacted=("fixture", self.path.name),
@@ -286,6 +344,8 @@ def parse_provider_output(raw: bytes, output_format: str) -> Iterator[Any]:
 
 
 def _walk(value: Any) -> Iterator[Any]:
+    """Walk provider events only for usage accounting, never result selection."""
+
     yield value
     if isinstance(value, dict):
         for item in value.values():
@@ -295,37 +355,67 @@ def _walk(value: Any) -> Iterator[Any]:
             yield from _walk(item)
 
 
-def _json_objects_from_text(text: str) -> Iterator[dict[str, Any]]:
+def _json_object_from_final_text(text: str) -> dict[str, Any] | None:
     stripped = text.strip()
     if stripped.startswith("```") and stripped.endswith("```"):
         lines = stripped.splitlines()
         if len(lines) >= 3:
             stripped = "\n".join(lines[1:-1]).strip()
-    decoder = json.JSONDecoder()
-    for index, char in enumerate(stripped):
-        if char != "{":
-            continue
-        try:
-            value, _ = decoder.raw_decode(stripped[index:])
-        except json.JSONDecodeError:
-            continue
-        if isinstance(value, dict):
+    try:
+        value = json.loads(stripped)
+    except json.JSONDecodeError:
+        return None
+    return value if isinstance(value, dict) else None
+
+
+def _terminal_envelopes(value: Any, *, depth: int = 0) -> Iterator[Mapping[str, Any]]:
+    """Inspect only approved final-result wrappers, never arbitrary nested tool payloads."""
+
+    if depth > 4:
+        return
+    if isinstance(value, dict):
+        if value.get("schema") == "tvl.search-result.v1":
             yield value
+            return
+        for key in TERMINAL_RESULT_KEYS:
+            if key in value:
+                yield from _terminal_envelopes(value[key], depth=depth + 1)
+    elif isinstance(value, list):
+        for item in value:
+            yield from _terminal_envelopes(item, depth=depth + 1)
+    elif isinstance(value, str):
+        parsed = _json_object_from_final_text(value)
+        if parsed is not None:
+            yield from _terminal_envelopes(parsed, depth=depth + 1)
 
 
 def extract_search_envelope(events: Iterable[Any]) -> SearchEnvelope:
+    values = list(events)
+    if not values:
+        raise ProviderError("provider output contained no events")
+
+    typed_stream = any(
+        isinstance(event, dict) and event.get("type") in STREAM_EVENT_TYPES for event in values
+    )
+    if typed_stream:
+        terminal = [
+            event
+            for event in values
+            if isinstance(event, dict) and event.get("type") == "result"
+        ]
+        if not terminal:
+            raise ProviderError("stream-json output contained no terminal result event")
+        roots: list[Any] = [terminal[-1]]
+    else:
+        if len(values) != 1:
+            raise ProviderError("untyped JSON output must contain exactly one final value")
+        roots = values
+
     candidates: list[Mapping[str, Any]] = []
-    for event in events:
-        for value in _walk(event):
-            if isinstance(value, dict) and value.get("schema") == "tvl.search-result.v1":
-                candidates.append(value)
-            elif isinstance(value, str) and "tvl.search-result.v1" in value:
-                candidates.extend(
-                    obj for obj in _json_objects_from_text(value) if obj.get("schema") == "tvl.search-result.v1"
-                )
+    for root in roots:
+        candidates.extend(_terminal_envelopes(root))
     if not candidates:
-        raise ProviderError("provider output contained no tvl.search-result.v1 envelope")
-    # The final envelope wins, matching terminal-stream semantics.
+        raise ProviderError("terminal provider result contained no tvl.search-result.v1 envelope")
     return SearchEnvelope.from_dict(candidates[-1])
 
 
@@ -363,19 +453,7 @@ def build_search_prompt(claim: Claim) -> str:
                 "Return both supporting and refuting candidates when sources disagree.",
                 "The final response must be one JSON object and no prose.",
             ],
-            "required_output": {
-                "schema": "tvl.search-result.v1",
-                "query": "string",
-                "candidates": [
-                    {
-                        "source_uri": "absolute https URL",
-                        "title": "source title or null",
-                        "published_at": "ISO-8601 timestamp/date or null",
-                        "relationship": "supports | refutes | context",
-                        "quote": "short verbatim quote",
-                    }
-                ],
-            },
+            "required_output": SEARCH_RESULT_JSON_SCHEMA,
             "source_requirements": source_requirements,
         }
     )

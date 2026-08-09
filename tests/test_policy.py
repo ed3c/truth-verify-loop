@@ -47,13 +47,16 @@ class PolicyTests(unittest.TestCase):
         self.assertTrue(result.required)
         self.assertIn("not pinned", " ".join(result.reasons))
 
-    def test_source_policy_uses_longest_domain_and_claim_trust(self):
+    def test_only_standing_policy_can_assign_authority(self):
         policy = SourcePolicy(
             domain_classes={"example.org": "first_party", "docs.example.org": "official_doc"}
         )
         self.assertEqual(policy.classify("https://v1.docs.example.org/a"), "official_doc")
         trusted = claim(trusted_domains=["trusted.invalid"])
-        self.assertEqual(policy.classify("https://docs.trusted.invalid/a", claim=trusted), "official_doc")
+        self.assertEqual(
+            policy.classify("https://docs.trusted.invalid/a", claim=trusted),
+            "unclassified",
+        )
 
 
 if __name__ == "__main__":

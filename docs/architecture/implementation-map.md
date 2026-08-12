@@ -34,6 +34,7 @@ Claim contract
 | deterministic closure | `harness/closure.py` | `tvl.evidence-closure.v1` |
 | live orchestration | `harness/orchestrator.py` | retrieval events, accepted evidence, closure, manifest |
 | semantic command adapters | `harness/semantic_adapters.py` | versioned config, bounded data-only stdin/stdout batches, attempt streams and receipts |
+| trusted local model CLI bridge | `scripts/semantic/structured_cli_adapter.py` | schema-pinned Codex/Claude review batch; explicit credential-home boundary |
 | operator interface | `harness/cli.py` | `decide`, `run-fixture`, `run-agy`, `verify-lake`, `manifest`, `rebuild-hot`, `search-hot` |
 
 ## Durable record flow

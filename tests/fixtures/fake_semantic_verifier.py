@@ -71,6 +71,14 @@ if mode == "assert-isolated-runtime":
     if list(workdir.iterdir()):
         print("disposable cwd is not empty", file=sys.stderr)
         raise SystemExit(37)
+if mode == "assert-explicit-cli-home":
+    cli_home = os.environ.get("TVL_CLI_HOME")
+    if not cli_home or not Path(cli_home).is_absolute():
+        print("TVL_CLI_HOME was not preserved", file=sys.stderr)
+        raise SystemExit(41)
+    if Path(os.environ.get("HOME", "missing")).resolve() == Path(cli_home).resolve():
+        print("credential home replaced the disposable process HOME", file=sys.stderr)
+        raise SystemExit(43)
 
 reviews = [
     {

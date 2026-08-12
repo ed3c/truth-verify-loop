@@ -1,10 +1,12 @@
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 
 from harness.model import Claim, ContractError, Evidence, sha256_text
 from harness.semantic import SemanticReviewRequest
@@ -95,6 +97,20 @@ class SemanticAdapterTests(unittest.TestCase):
         self.assertFalse(result_review["additionalProperties"])
         self.assertNotIn("family", result_review["properties"])
         self.assertNotIn("verifier_receipt_sha256", result_review["properties"])
+
+    def test_bundled_local_cli_example_loads_without_running_providers(self) -> None:
+        root = Path(__file__).parents[1]
+        dispatcher = load_semantic_dispatcher(
+            root / "config/semantic-verifiers.local-cli.example.json",
+            cwd=root,
+        )
+
+        self.assertEqual(
+            [verifier.family for verifier in dispatcher.verifiers],
+            ["openai-codex", "anthropic-claude"],
+        )
+        self.assertTrue(Path(dispatcher.verifiers[0].command[0]).is_absolute())
+        self.assertEqual(dispatcher.judge.family, "fresh-anthropic-judge")
 
     def test_published_example_config_loads_without_running_placeholders(self) -> None:
         root = Path(__file__).parents[1]
@@ -494,6 +510,38 @@ class SemanticAdapterTests(unittest.TestCase):
             result = load_semantic_dispatcher(
                 config_path, cwd=Path.cwd()
             ).dispatch([request()], minimum_families=1)
+
+        self.assertEqual(result.runs[0].receipt.status, "succeeded")
+
+    def test_explicit_cli_credential_home_survives_without_replacing_process_home(self) -> None:
+        config = {
+            "schema": "tvl.semantic-verifier-config.v1",
+            "verifiers": [
+                self.config_entry(
+                    command=[
+                        sys.executable,
+                        FAKE_VERIFIER.as_posix(),
+                        "assert-explicit-cli-home",
+                    ]
+                )
+            ],
+            "judge": None,
+            "max_judge_requests": 2,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            credential_home = root / "service-account"
+            credential_home.mkdir()
+            config_path = root / "semantic.json"
+            config_path.write_text(json.dumps(config), encoding="utf-8")
+
+            with mock.patch.dict(
+                os.environ,
+                {"TVL_CLI_HOME": credential_home.as_posix()},
+            ):
+                result = load_semantic_dispatcher(
+                    config_path, cwd=Path.cwd()
+                ).dispatch([request()], minimum_families=1)
 
         self.assertEqual(result.runs[0].receipt.status, "succeeded")
 

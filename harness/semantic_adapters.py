@@ -32,7 +32,7 @@ CONFIG_SCHEMA = "tvl.semantic-verifier-config.v1"
 COMMAND_SCHEMA = "tvl.semantic-review-command.v1"
 RESULT_SCHEMA = "tvl.semantic-review-batch.v1"
 MAX_STREAM_BYTES = 1_048_576
-SEMANTIC_ENV_ALLOWLIST = ("PATH", "LANG", "LC_ALL", "TERM")
+SEMANTIC_ENV_ALLOWLIST = ("PATH", "LANG", "LC_ALL", "TERM", "TVL_CLI_HOME")
 ENTRY_FIELDS = {
     "family",
     "provider",

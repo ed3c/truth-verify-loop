@@ -1,0 +1,36 @@
+{
+  "schema": "tvl.semantic-verifier-config.v1",
+  "verifiers": [
+    {
+      "family": "openai-codex",
+      "provider": "openai",
+      "provider_version": "replace-with-codex-cli-version",
+      "model": "replace-with-openai-model",
+      "command": ["scripts/semantic/structured_cli_adapter.py", "--backend", "codex", "--model", "replace-with-openai-model"],
+      "timeout_seconds": 120,
+      "max_attempts": 1,
+      "instruction_files": ["semantic-verifier-instructions.example.md"]
+    },
+    {
+      "family": "anthropic-claude",
+      "provider": "anthropic",
+      "provider_version": "replace-with-claude-cli-version",
+      "model": "replace-with-anthropic-verifier-model",
+      "command": ["scripts/semantic/structured_cli_adapter.py", "--backend", "claude", "--model", "replace-with-anthropic-verifier-model"],
+      "timeout_seconds": 120,
+      "max_attempts": 1,
+      "instruction_files": ["semantic-verifier-instructions.example.md"]
+    }
+  ],
+  "judge": {
+    "family": "fresh-anthropic-judge",
+    "provider": "anthropic",
+    "provider_version": "replace-with-claude-cli-version",
+    "model": "replace-with-fresh-anthropic-judge-model",
+    "command": ["scripts/semantic/structured_cli_adapter.py", "--backend", "claude", "--model", "replace-with-fresh-anthropic-judge-model"],
+    "timeout_seconds": 120,
+    "max_attempts": 1,
+    "instruction_files": ["semantic-verifier-instructions.example.md"]
+  },
+  "max_judge_requests": 8
+}

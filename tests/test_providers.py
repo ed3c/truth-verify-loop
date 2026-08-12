@@ -13,6 +13,8 @@ from harness.providers import (
     parse_provider_output,
 )
 
+FAKE_AGY = Path(__file__).parent / "fixtures" / "fake_agy.py"
+
 
 class ProviderTests(unittest.TestCase):
     def test_current_agy_stream_accepts_only_terminal_result(self):
@@ -168,20 +170,75 @@ class ProviderTests(unittest.TestCase):
             "--dangerously-skip-permissions=true",
             "--yolo=true",
             "--json-schema={}",
+            "--print-timeout=1s",
         ):
             with self.subTest(flag=flag), self.assertRaises(ContractError):
                 AgyProvider(extra_args=(flag,))
 
     def test_command_is_argument_vector_with_pinned_output_schema(self):
-        provider = AgyProvider(model="fast", effort="low")
+        provider = AgyProvider(model="fast", effort="low", print_timeout_seconds=300)
         command = provider._command("claim text")
         self.assertIsInstance(command, list)
         self.assertEqual(command[:3], ["agy", "--print", "claim text"])
         self.assertNotIn("sh", command)
+        self.assertEqual(command[command.index("--print-timeout") + 1], "300s")
         schema_index = command.index("--json-schema") + 1
         schema = json.loads(command[schema_index])
         self.assertEqual(schema["properties"]["schema"]["const"], "tvl.search-result.v1")
         self.assertEqual(len(SEARCH_RESULT_SCHEMA_SHA256), 64)
+
+        short_command = AgyProvider(print_timeout_seconds=0.000001)._command("claim text")
+        self.assertEqual(
+            short_command[short_command.index("--print-timeout") + 1],
+            "0.000001s",
+        )
+
+    def test_outer_timeout_must_exceed_provider_timeout_before_process_start(self):
+        provider = AgyProvider(
+            binary="/does/not/exist/agy",
+            print_timeout_seconds=300,
+        )
+        with self.assertRaisesRegex(ContractError, "greater than provider print timeout"):
+            provider.run("claim text", cwd=Path.cwd(), outer_timeout_seconds=300)
+
+        for invalid in (0, float("inf"), float("nan")):
+            with self.subTest(invalid=invalid), self.assertRaises(ContractError):
+                AgyProvider(print_timeout_seconds=invalid)
+
+    def test_real_subprocess_completes_inside_both_timeout_layers(self):
+        provider = AgyProvider(binary=FAKE_AGY.as_posix(), print_timeout_seconds=0.05)
+        run = provider.run("complete", cwd=Path.cwd(), outer_timeout_seconds=0.5)
+
+        self.assertEqual(run.receipt.exit_code, 0)
+        self.assertFalse(run.receipt.timed_out)
+        self.assertEqual(run.receipt.provider_print_timeout_seconds, 0.05)
+        self.assertEqual(run.receipt.outer_timeout_seconds, 0.5)
+        self.assertEqual(extract_search_envelope(run.events).query, "complete")
+
+    def test_provider_timeout_exits_before_outer_recovery_timeout(self):
+        provider = AgyProvider(binary=FAKE_AGY.as_posix(), print_timeout_seconds=0.05)
+        run = provider.run("provider-timeout", cwd=Path.cwd(), outer_timeout_seconds=0.5)
+
+        self.assertEqual(run.receipt.exit_code, 124)
+        self.assertFalse(run.receipt.timed_out)
+        self.assertEqual(run.receipt.usage["input_tokens"], 7)
+        self.assertEqual(run.receipt.usage["cache_read_tokens"], 11)
+
+    def test_outer_recovery_timeout_preserves_partial_usage(self):
+        provider = AgyProvider(binary=FAKE_AGY.as_posix(), print_timeout_seconds=0.05)
+        run = provider.run("outer-timeout", cwd=Path.cwd(), outer_timeout_seconds=0.5)
+
+        self.assertIsNone(run.receipt.exit_code)
+        self.assertTrue(run.receipt.timed_out)
+        self.assertEqual(run.receipt.usage["input_tokens"], 7)
+        self.assertEqual(run.receipt.usage["cache_read_tokens"], 11)
+
+    def test_timeout_receipt_fields_do_not_invalidate_v1_history(self):
+        schema_path = Path(__file__).parents[1] / "schemas" / "run-manifest.v1.schema.json"
+        required = json.loads(schema_path.read_text(encoding="utf-8"))["required"]
+
+        self.assertNotIn("provider_print_timeout_seconds", required)
+        self.assertNotIn("outer_timeout_seconds", required)
 
     def test_search_prompt_repeats_machine_contract(self):
         claim = Claim.from_dict({

@@ -46,6 +46,10 @@ python3 -m harness.cli run-agy \
   --claim examples/live-search/claim.json \
   --policy config/source-policy.example.json \
   --model-knowledge-cutoff 2025-12-01T00:00:00Z \
+  --model gemini-3.6-flash-low \
+  --effort low \
+  --provider-print-timeout 300 \
+  --outer-timeout 330 \
   --lake .tvlake
 ```
 

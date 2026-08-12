@@ -187,10 +187,11 @@ The Antigravity adapter invokes an argument vector, never a shell string:
 agy --print <prompt> \
   --output-format stream-json \
   --json-schema <tvl.search-result.v1-schema> \
+  --print-timeout <provider-deadline> \
   [--model ...] [--effort ...]
 ```
 
-The schema, output-format, model, effort, and permission-boundary flags cannot be overridden through generic extra arguments.
+The schema, output-format, provider deadline, model, effort, and permission-boundary flags cannot be overridden through generic extra arguments. The harness also applies an outer recovery watchdog. Its deadline must be strictly greater than `--print-timeout`; invalid relationships fail before version probing or provider execution. The provider therefore gets the first chance to emit its terminal result or its own timeout outcome, while the outer watchdog remains available to recover a wedged process.
 
 The provider receipt records:
 
@@ -199,10 +200,12 @@ The provider receipt records:
 - redacted command vector;
 - prompt, instruction-file, and output-schema hashes;
 - working directory;
-- start/end time, timeout, and exit code;
+- start/end time, provider print timeout, outer recovery timeout, outer-timeout status, and exit code;
 - `stdout` and `stderr` hashes;
 - inherited environment key names and a non-reversible fingerprint;
 - token and cache-read usage when present.
+
+`timed_out=true` means the outer recovery watchdog killed the process. A provider that reaches its own print deadline exits normally from the subprocess perspective and is represented by its non-zero exit code. In both cases, the receipt accounts for usage already emitted on `stdout`; absence of a terminal result still fails closed.
 
 The requested final payload is `tvl.search-result.v1`: candidate URLs, relationships, and short verbatim quotes. For typed streams, the parser accepts the current `event` discriminator and the legacy `type` discriminator, but rejects a stream that mixes them. It requires exactly one terminal `result` event containing exactly one distinct result envelope, and accepts the envelope only from that event. Identical `response` and `structured_output` mirrors are canonicalized and deduplicated; conflicting envelopes remain ambiguous and fail closed. The parser never scans `step_update`, tool output, or fetched-page payloads for a final envelope; those events remain available for usage accounting. A missing or ambiguous terminal result, malformed schema, or non-zero provider exit fails closed.
 

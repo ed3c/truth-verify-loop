@@ -164,6 +164,7 @@ def command_run_agy(args: argparse.Namespace) -> int:
         model=args.model,
         effort=args.effort,
         output_format=args.output_format,
+        print_timeout_seconds=args.provider_print_timeout,
         extra_args=tuple(args.agy_arg),
     )
     from .retriever import SafeHttpRetriever
@@ -180,7 +181,7 @@ def command_run_agy(args: argparse.Namespace) -> int:
         ),
         cwd=args.cwd,
         model_knowledge_cutoff=args.model_knowledge_cutoff,
-        timeout_seconds=args.provider_timeout,
+        outer_timeout_seconds=args.outer_timeout,
         instruction_files=tuple(args.instruction_file),
     )
     _print(result)
@@ -257,7 +258,18 @@ def build_parser() -> argparse.ArgumentParser:
     agy.add_argument("--agy-arg", action="append", default=[])
     agy.add_argument("--cwd", type=Path, default=Path.cwd())
     agy.add_argument("--instruction-file", type=Path, action="append", default=[])
-    agy.add_argument("--provider-timeout", type=float, default=90.0)
+    agy.add_argument(
+        "--provider-print-timeout",
+        type=float,
+        default=300.0,
+        help="deadline passed to agy --print-timeout in seconds",
+    )
+    agy.add_argument(
+        "--outer-timeout",
+        type=float,
+        default=330.0,
+        help="recovery watchdog in seconds; must exceed --provider-print-timeout",
+    )
     agy.add_argument("--fetch-timeout", type=float, default=20.0)
     agy.add_argument("--max-bytes", type=int, default=2_000_000)
     agy.set_defaults(handler=command_run_agy)

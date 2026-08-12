@@ -253,6 +253,25 @@ class ProviderTests(unittest.TestCase):
         self.assertEqual(required["properties"]["schema"]["const"], "tvl.search-result.v1")
         self.assertIn("untrusted", " ".join(value["rules"]))
 
+    def test_search_prompt_requires_directional_quotes_to_entail_the_full_claim(self):
+        claim = Claim.from_dict({
+            "claim_id": "c-latest-release",
+            "statement": "Python 3.14 is the latest stable Python release.",
+            "risk": "medium",
+            "temporality": "dynamic",
+            "freshness_sla_seconds": 3600,
+        })
+
+        value = json.loads(build_search_prompt(claim))
+        rules = " ".join(value["rules"])
+
+        self.assertIn("directly entail the entire claim", rules)
+        self.assertIn("label it context", rules)
+        quote_description = value["required_output"]["properties"]["candidates"][
+            "items"
+        ]["properties"]["quote"]["description"]
+        self.assertIn("entail the proposed relationship", quote_description)
+
 
 if __name__ == "__main__":
     unittest.main()

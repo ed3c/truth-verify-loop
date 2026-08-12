@@ -1,0 +1,22 @@
+{
+  "blockers": [
+    "export-tree-drift",
+    "open-delivery-slices",
+    "open-delivery-prs",
+    "human-visibility-gate"
+  ],
+  "commit": "899d93bfbe9acd4b68ca6c0dac3469d2b78dbbe7",
+  "export_source_commit": "5bf7726d2feced60f9270eb4eb1d6bbf10f39808",
+  "export_tree_sha": "4b0b43583b4b037f61e0d73a1f6461cad6177267",
+  "file_count": 45,
+  "github_repo": "ed3c/truth-verify-loop",
+  "github_repository_id": "R_kgDOTy7yhw",
+  "history_root": true,
+  "license_spdx": "MIT",
+  "line": "truth-verify-loop-delivery",
+  "public_ready": false,
+  "remote_url": "https://github.com/ed3c/truth-verify-loop",
+  "schema": "github-publication-attestation/v1",
+  "verified_at": "2026-08-12T04:06:46Z",
+  "visibility": "PRIVATE"
+}

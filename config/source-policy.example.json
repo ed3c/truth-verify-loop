@@ -1,0 +1,43 @@
+{
+  "https_only": true,
+  "default_source_class": "unclassified",
+  "domain_classes": {
+    "docs.python.org": "official_doc",
+    "python.org": "first_party",
+    "developer.android.com": "official_doc",
+    "kubernetes.io": "official_doc",
+    "docs.github.com": "official_doc",
+    "w3.org": "standard",
+    "iceberg.apache.org": "standard",
+    "openlineage.io": "standard",
+    "opentelemetry.io": "standard",
+    "cloud.google.com": "first_party",
+    "docs.databricks.com": "first_party"
+  },
+  "risk_requirements": {
+    "low": {
+      "require_primary": false,
+      "min_independent_sources": 0,
+      "require_full_source_capture": false,
+      "min_semantic_verifier_families": 0
+    },
+    "medium": {
+      "require_primary": true,
+      "min_independent_sources": 0,
+      "require_full_source_capture": true,
+      "min_semantic_verifier_families": 1
+    },
+    "high": {
+      "require_primary": true,
+      "min_independent_sources": 1,
+      "require_full_source_capture": true,
+      "min_semantic_verifier_families": 2
+    },
+    "critical": {
+      "require_primary": true,
+      "min_independent_sources": 2,
+      "require_full_source_capture": true,
+      "min_semantic_verifier_families": 2
+    }
+  }
+}

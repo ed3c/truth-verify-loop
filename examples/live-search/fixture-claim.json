@@ -1,0 +1,14 @@
+{
+  "claim_id": "synthetic-sdk-release",
+  "statement": "Example SDK 4.2 is generally available.",
+  "risk": "low",
+  "temporality": "static",
+  "freshness_sla_seconds": 31536000,
+  "scope": {
+    "product": "Example SDK",
+    "version": "4.2.0"
+  },
+  "owner": "example-team",
+  "falsifier": "A synthetic release record that marks version 4.2 as pre-release.",
+  "trusted_domains": ["docs.example.invalid"]
+}

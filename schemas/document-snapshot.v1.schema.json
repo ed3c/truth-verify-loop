@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/truth-verify-loop/schemas/document-snapshot.v1.schema.json",
+  "title": "Truth Verify Loop Document Snapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "document_id",
+    "snapshot_id",
+    "source_uri",
+    "source_type",
+    "authority_class",
+    "media_type",
+    "content_sha256",
+    "retrieved_at",
+    "capture_scope",
+    "metadata"
+  ],
+  "properties": {
+    "document_id": {"type": "string", "pattern": "^doc-[0-9a-f]{24}$"},
+    "snapshot_id": {"type": "string", "pattern": "^snap-[0-9a-f]{24}$"},
+    "source_uri": {"type": "string", "format": "uri", "pattern": "^https?://"},
+    "source_type": {"type": "string", "minLength": 1},
+    "authority_class": {"type": "string", "minLength": 1},
+    "media_type": {"type": "string", "minLength": 1},
+    "content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "retrieved_at": {"type": "string", "format": "date-time"},
+    "capture_scope": {"type": "string", "minLength": 1},
+    "title": {"type": ["string", "null"]},
+    "product": {"type": ["string", "null"]},
+    "version": {"type": ["string", "null"]},
+    "release_channel": {"type": ["string", "null"]},
+    "commit_sha": {"type": ["string", "null"]},
+    "language": {"type": ["string", "null"]},
+    "valid_from": {"type": ["string", "null"], "format": "date-time"},
+    "valid_to": {"type": ["string", "null"], "format": "date-time"},
+    "supersedes_snapshot_id": {"type": ["string", "null"]},
+    "metadata": {"type": "object"}
+  }
+}

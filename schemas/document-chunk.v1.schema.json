@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/truth-verify-loop/schemas/document-chunk.v1.schema.json",
+  "title": "Truth Verify Loop Document Chunk v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "chunk_id",
+    "document_id",
+    "snapshot_id",
+    "ordinal",
+    "structural_path",
+    "text",
+    "text_sha256",
+    "char_start",
+    "char_end",
+    "token_estimate",
+    "symbols"
+  ],
+  "properties": {
+    "chunk_id": {"type": "string", "pattern": "^chunk-[0-9a-f]{24}$"},
+    "document_id": {"type": "string", "pattern": "^doc-[0-9a-f]{24}$"},
+    "snapshot_id": {"type": "string", "pattern": "^snap-[0-9a-f]{24}$"},
+    "ordinal": {"type": "integer", "minimum": 0},
+    "structural_path": {"type": "array", "items": {"type": "string"}},
+    "text": {"type": "string", "minLength": 1},
+    "text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "char_start": {"type": "integer", "minimum": 0},
+    "char_end": {"type": "integer", "minimum": 1},
+    "token_estimate": {"type": "integer", "minimum": 1},
+    "symbols": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
+  }
+}

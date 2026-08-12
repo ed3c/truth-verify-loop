@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-08-12T04:04:52Z",
+  "fetched_at": "2026-08-12T04:06:46Z",
   "github_repo": "ed3c/truth-verify-loop",
   "github_repository_id": "R_kgDOTy7yhw",
   "line": "truth-verify-loop-delivery",
@@ -17,8 +17,8 @@
       "p85": 14248
     },
     "queue_seconds": {
-      "p50": 1331,
-      "p85": 2629
+      "p50": 1826,
+      "p85": 4182
     },
     "review_seconds": {
       "p50": 12422,
@@ -181,10 +181,10 @@
       "issue_number": 14,
       "issue_state": "OPEN",
       "lead_seconds": null,
-      "queue_seconds": null,
+      "queue_seconds": 4182,
       "reopened": false,
       "review_seconds": null,
-      "started_pr": null,
+      "started_pr": 20,
       "title": "Delivery: add registry and zero-network artifact receipts"
     },
     {
@@ -223,6 +223,6 @@
     "throughput_28d": 1,
     "throughput_7d": 1,
     "total_slices": 13,
-    "wip": 3
+    "wip": 4
   }
 }

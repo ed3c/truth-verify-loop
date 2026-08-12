@@ -1,6 +1,6 @@
 # truth-verify-loop-delivery delivery dashboard
 
-> Snapshot: `2026-08-12T04:04:52Z`。本頁是 GitHub event truth 的時間點快照，
+> Snapshot: `2026-08-12T04:06:46Z`。本頁是 GitHub event truth 的時間點快照，
 > 不是 registry 的第二份真相，也不是個人生產力排名。
 
 ## Truth boundary
@@ -27,7 +27,7 @@
 | Signal | Value |
 |---|---:|
 | accepted slices | 1 |
-| WIP | 3 |
+| WIP | 4 |
 | blocked | 0 |
 | throughput 7d / 28d | 1 / 1 |
 | closed_without_merge | 1 |
@@ -36,7 +36,7 @@
 
 | Status | Items |
 |---|---:|
-| In Progress | 1 |
+| In Progress | 2 |
 | Todo | 3 |
 
 `closed_without_merge` 是證據缺口，不計入 throughput。p50/p85 只在有 merge event 樣本時顯示。
@@ -55,7 +55,7 @@
 | #11 | OPEN | — | — | UNKNOWN | 0 |
 | #12 | OPEN | — | — | UNKNOWN | 0 |
 | #13 | OPEN | 15 | — | UNKNOWN | 0 |
-| #14 | OPEN | — | — | UNKNOWN | 0 |
+| #14 | OPEN | 20 | — | UNKNOWN | 0 |
 | #16 | OPEN | 18 | — | UNKNOWN | 0 |
 | #17 | OPEN | 19 | — | UNKNOWN | 0 |
 

@@ -13,7 +13,14 @@ from .model import ContractError, canonical_json, format_timestamp, sha256_bytes
 
 ZONE_STREAMS: dict[str, set[str]] = {
     "bronze": {"blobs", "blob-receipts", "agent-sessions", "retrieval-events"},
-    "silver": {"claims", "evidence", "documents", "chunks", "revisions"},
+    "silver": {
+        "claims",
+        "evidence",
+        "documents",
+        "chunks",
+        "revisions",
+        "semantic-reviews",
+    },
     "gold": {"closures", "coverage-ledger"},
 }
 

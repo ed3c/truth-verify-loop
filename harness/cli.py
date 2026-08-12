@@ -17,6 +17,7 @@ from .orchestrator import HarnessError, run_live_verification
 from .policy import SourcePolicy, decide_live_search
 from .providers import AgyProvider, ProviderError
 from .retriever import RetrievalError, extract_text, locate_quote
+from .semantic_adapters import load_semantic_dispatcher
 
 
 def _load_json(path: Path) -> Any:
@@ -169,6 +170,12 @@ def command_run_agy(args: argparse.Namespace) -> int:
     )
     from .retriever import SafeHttpRetriever
 
+    semantic_dispatcher = (
+        None
+        if args.semantic_config is None
+        else load_semantic_dispatcher(args.semantic_config, cwd=args.cwd)
+    )
+
     result = run_live_verification(
         claim,
         lake=lake,
@@ -183,6 +190,7 @@ def command_run_agy(args: argparse.Namespace) -> int:
         model_knowledge_cutoff=args.model_knowledge_cutoff,
         outer_timeout_seconds=args.outer_timeout,
         instruction_files=tuple(args.instruction_file),
+        semantic_dispatcher=semantic_dispatcher,
     )
     _print(result)
     return 0 if result["closure"]["closed"] else 2
@@ -258,6 +266,11 @@ def build_parser() -> argparse.ArgumentParser:
     agy.add_argument("--agy-arg", action="append", default=[])
     agy.add_argument("--cwd", type=Path, default=Path.cwd())
     agy.add_argument("--instruction-file", type=Path, action="append", default=[])
+    agy.add_argument(
+        "--semantic-config",
+        type=Path,
+        help="versioned semantic verifier and optional judge configuration",
+    )
     agy.add_argument(
         "--provider-print-timeout",
         type=float,

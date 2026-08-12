@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/truth-verify-loop/schemas/semantic-review.v1.schema.json",
+  "title": "Truth Verify Loop Semantic Review v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "request_id",
+    "evidence_id",
+    "family",
+    "verdict",
+    "rationale_summary",
+    "verifier_receipt_sha256"
+  ],
+  "properties": {
+    "schema": {"const": "tvl.semantic-review.v1"},
+    "request_id": {"type": "string", "minLength": 1},
+    "evidence_id": {"type": "string", "minLength": 1},
+    "family": {"type": "string", "minLength": 1},
+    "verdict": {"enum": ["ENTAILS", "DOES_NOT_ENTAIL", "ABSTAIN"]},
+    "rationale_summary": {"type": "string", "minLength": 1},
+    "verifier_receipt_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

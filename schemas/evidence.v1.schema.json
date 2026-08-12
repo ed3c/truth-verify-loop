@@ -148,6 +148,43 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "semantic_review": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "evidence_id",
+            "verdict",
+            "accepted_families",
+            "policy_satisfied",
+            "judge_family"
+          ],
+          "properties": {
+            "evidence_id": {"type": "string", "minLength": 1},
+            "verdict": {
+              "enum": [
+                "ENTAILS",
+                "DOES_NOT_ENTAIL",
+                "ABSTAIN",
+                "DISAGREEMENT"
+              ]
+            },
+            "accepted_families": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1}
+            },
+            "policy_satisfied": {"type": "boolean"},
+            "judge_family": {"type": ["string", "null"]}
+          }
+        },
+        "semantic_review_receipt_sha256s": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
         }
       },
       "additionalProperties": true

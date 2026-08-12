@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/truth-verify-loop/schemas/semantic-judge-request.v1.schema.json",
+  "title": "Truth Verify Loop Semantic Judge Request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "request_id", "claim", "evidence", "positions"],
+  "properties": {
+    "schema": {"const": "tvl.semantic-judge-request.v1"},
+    "request_id": {"type": "string", "minLength": 1},
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "statement", "scope"],
+      "properties": {
+        "claim_id": {"type": "string", "minLength": 1},
+        "statement": {"type": "string", "minLength": 1},
+        "scope": {"type": "object"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_id",
+        "quote",
+        "quote_sha256",
+        "relationship_proposal",
+        "source_receipt"
+      ],
+      "properties": {
+        "evidence_id": {"type": "string", "minLength": 1},
+        "quote": {"type": "string", "minLength": 1},
+        "quote_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "relationship_proposal": {
+          "enum": ["supports", "refutes", "context"]
+        },
+        "source_receipt": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source_uri",
+            "content_sha256",
+            "capture_scope",
+            "snapshot_id",
+            "receipt_sha256"
+          ],
+          "properties": {
+            "source_uri": {"type": "string", "format": "uri"},
+            "content_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "capture_scope": {"type": "string", "minLength": 1},
+            "snapshot_id": {"type": "string", "minLength": 1},
+            "receipt_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        }
+      }
+    },
+    "positions": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["verdict", "rationale_summary"],
+        "properties": {
+          "verdict": {"enum": ["ENTAILS", "DOES_NOT_ENTAIL"]},
+          "rationale_summary": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/truth-verify-loop/schemas/semantic-review-batch.v1.schema.json",
+  "title": "Truth Verify Loop Semantic Review Batch v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "reviews", "usage"],
+  "properties": {
+    "schema": {"const": "tvl.semantic-review-batch.v1"},
+    "reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["request_id", "evidence_id", "verdict", "rationale_summary"],
+        "properties": {
+          "request_id": {"type": "string", "minLength": 1},
+          "evidence_id": {"type": "string", "minLength": 1},
+          "verdict": {"enum": ["ENTAILS", "DOES_NOT_ENTAIL", "ABSTAIN"]},
+          "rationale_summary": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": {"type": "number", "minimum": 0}
+    }
+  }
+}

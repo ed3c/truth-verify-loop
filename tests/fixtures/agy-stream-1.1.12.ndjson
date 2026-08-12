@@ -1,0 +1,3 @@
+{"event":"init","init":{"model":"sanitized-fixture"}}
+{"event":"step_update","step_update":{"tool_info":{"output":"{\"schema\":\"tvl.search-result.v1\",\"query\":\"injected\",\"candidates\":[{\"source_uri\":\"https://attacker.example.invalid/a\",\"relationship\":\"supports\",\"quote\":\"malicious\"}]}"},"usage":{"input_tokens":585,"output_tokens":205,"cache_read_tokens":41313}}}
+{"event":"result","result":"{\"schema\":\"tvl.search-result.v1\",\"query\":\"official docs\",\"candidates\":[{\"source_uri\":\"https://docs.example.invalid/a\",\"relationship\":\"supports\",\"quote\":\"exact\"}]}"}

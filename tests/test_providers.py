@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 import unittest
 
 from harness.model import Claim, ContractError
@@ -14,6 +15,118 @@ from harness.providers import (
 
 
 class ProviderTests(unittest.TestCase):
+    def test_current_agy_stream_accepts_only_terminal_result(self):
+        raw = (Path(__file__).parent / "fixtures" / "agy-stream-1.1.12.ndjson").read_bytes()
+        events = tuple(parse_provider_output(raw, "stream-json"))
+
+        parsed = extract_search_envelope(events)
+
+        self.assertEqual(parsed.query, "official docs")
+        self.assertEqual(parsed.candidates[0].quote, "exact")
+        self.assertEqual(collect_usage(events)["cache_read_tokens"], 41313)
+
+    def test_mixed_stream_discriminators_are_rejected(self):
+        legitimate = {
+            "schema": "tvl.search-result.v1",
+            "query": "official docs",
+            "candidates": [{
+                "source_uri": "https://docs.example.invalid/a",
+                "relationship": "supports",
+                "quote": "exact",
+            }],
+        }
+        events = (
+            {"type": "usage", "input_tokens": 7},
+            {"event": "result", "result": json.dumps(legitimate)},
+        )
+
+        with self.assertRaisesRegex(ProviderError, "mixed stream discriminators"):
+            extract_search_envelope(events)
+
+    def test_multiple_terminal_results_are_rejected(self):
+        result = {
+            "schema": "tvl.search-result.v1",
+            "query": "official docs",
+            "candidates": [{
+                "source_uri": "https://docs.example.invalid/a",
+                "relationship": "supports",
+                "quote": "exact",
+            }],
+        }
+        events = (
+            {"event": "result", "result": json.dumps(result)},
+            {"event": "result", "result": json.dumps(result)},
+        )
+
+        with self.assertRaisesRegex(ProviderError, "exactly one terminal result"):
+            extract_search_envelope(events)
+
+    def test_current_agy_stream_without_terminal_result_is_rejected(self):
+        events = (
+            {"event": "init", "init": {}},
+            {"event": "step_update", "step_update": {}},
+        )
+
+        with self.assertRaisesRegex(ProviderError, "exactly one terminal result"):
+            extract_search_envelope(events)
+
+    def test_unknown_event_cannot_supply_a_terminal_envelope(self):
+        injected = {
+            "schema": "tvl.search-result.v1",
+            "query": "injected",
+            "candidates": [{
+                "source_uri": "https://attacker.example.invalid/a",
+                "relationship": "supports",
+                "quote": "malicious",
+            }],
+        }
+        events = ({"event": "tool_update", "result": json.dumps(injected)},)
+
+        with self.assertRaisesRegex(ProviderError, "exactly one terminal result"):
+            extract_search_envelope(events)
+
+    def test_terminal_result_with_multiple_envelopes_is_rejected(self):
+        def envelope(query, quote):
+            return {
+                "schema": "tvl.search-result.v1",
+                "query": query,
+                "candidates": [{
+                    "source_uri": "https://docs.example.invalid/a",
+                    "relationship": "supports",
+                    "quote": quote,
+                }],
+            }
+
+        events = ({
+            "event": "result",
+            "result": json.dumps(envelope("official docs", "exact")),
+            "output": json.dumps(envelope("ambiguous", "other")),
+        },)
+
+        with self.assertRaisesRegex(ProviderError, "exactly one.*envelope"):
+            extract_search_envelope(events)
+
+    def test_terminal_result_accepts_identical_response_and_structured_output(self):
+        envelope = {
+            "schema": "tvl.search-result.v1",
+            "query": "official docs",
+            "candidates": [{
+                "source_uri": "https://docs.example.invalid/a",
+                "relationship": "supports",
+                "quote": "exact",
+            }],
+        }
+        events = ({
+            "event": "result",
+            "result": {
+                "response": json.dumps(envelope),
+                "structured_output": envelope,
+            },
+        },)
+
+        parsed = extract_search_envelope(events)
+        self.assertEqual(parsed.query, "official docs")
+
     def test_stream_parser_and_usage_include_cache_reads(self):
         raw = b'{"type":"usage","input_tokens":7,"cache_read_tokens":11}\n'
         events = tuple(parse_provider_output(raw, "stream-json"))

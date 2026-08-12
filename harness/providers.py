@@ -72,7 +72,6 @@ TERMINAL_RESULT_KEYS = (
     "content",
     "text",
 )
-STREAM_EVENT_TYPES = {"init", "step_update", "result"}
 
 
 class ProviderError(RuntimeError):
@@ -394,18 +393,26 @@ def extract_search_envelope(events: Iterable[Any]) -> SearchEnvelope:
     if not values:
         raise ProviderError("provider output contained no events")
 
-    typed_stream = any(
-        isinstance(event, dict) and event.get("type") in STREAM_EVENT_TYPES for event in values
-    )
-    if typed_stream:
+    discriminators = {
+        key
+        for key in ("event", "type")
+        if any(isinstance(item, dict) and key in item for item in values)
+    }
+    if len(discriminators) > 1:
+        raise ProviderError("stream-json output mixed stream discriminators")
+    discriminator = next(iter(discriminators), None)
+    if discriminator is not None:
         terminal = [
             event
             for event in values
-            if isinstance(event, dict) and event.get("type") == "result"
+            if isinstance(event, dict) and event.get(discriminator) == "result"
         ]
-        if not terminal:
-            raise ProviderError("stream-json output contained no terminal result event")
-        roots: list[Any] = [terminal[-1]]
+        if len(terminal) != 1:
+            raise ProviderError(
+                "stream-json output must contain exactly one terminal result event; "
+                f"found {len(terminal)}"
+            )
+        roots: list[Any] = terminal
     else:
         if len(values) != 1:
             raise ProviderError("untyped JSON output must contain exactly one final value")
@@ -414,9 +421,17 @@ def extract_search_envelope(events: Iterable[Any]) -> SearchEnvelope:
     candidates: list[Mapping[str, Any]] = []
     for root in roots:
         candidates.extend(_terminal_envelopes(root))
-    if not candidates:
-        raise ProviderError("terminal provider result contained no tvl.search-result.v1 envelope")
-    return SearchEnvelope.from_dict(candidates[-1])
+    unique_candidates = {
+        canonical_json(candidate): candidate
+        for candidate in candidates
+    }
+    if len(unique_candidates) != 1:
+        raise ProviderError(
+            "terminal provider result must contain exactly one "
+            "distinct tvl.search-result.v1 envelope; "
+            f"found {len(unique_candidates)}"
+        )
+    return SearchEnvelope.from_dict(next(iter(unique_candidates.values())))
 
 
 def collect_usage(events: Iterable[Any]) -> dict[str, Any]:

@@ -27,6 +27,7 @@ class LakeTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name) / "lake"
         self.lake = EvidenceLake(self.root)
+        self.root = self.lake.root
         self.lake.initialize()
 
     def tearDown(self):

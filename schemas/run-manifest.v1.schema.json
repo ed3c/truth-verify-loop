@@ -39,6 +39,14 @@
     "ended_at": {"type": "string", "format": "date-time"},
     "exit_code": {"type": ["integer", "null"]},
     "timed_out": {"type": "boolean"},
+    "provider_print_timeout_seconds": {
+      "type": ["number", "null"],
+      "exclusiveMinimum": 0
+    },
+    "outer_timeout_seconds": {
+      "type": ["number", "null"],
+      "exclusiveMinimum": 0
+    },
     "stdout_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "stderr_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "environment_keys": {"type": "array", "items": {"type": "string"}},

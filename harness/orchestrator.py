@@ -61,7 +61,7 @@ def run_live_verification(
     retriever: SafeHttpRetriever,
     cwd: Path | str,
     model_knowledge_cutoff: str | datetime | None,
-    timeout_seconds: float = 90.0,
+    outer_timeout_seconds: float = 330.0,
     instruction_files: tuple[Path, ...] = (),
 ) -> dict[str, Any]:
     lake.initialize()
@@ -90,7 +90,7 @@ def run_live_verification(
     provider_run = provider.run(
         prompt,
         cwd=cwd,
-        timeout_seconds=timeout_seconds,
+        outer_timeout_seconds=outer_timeout_seconds,
         instruction_files=instruction_files,
     )
     receipt_bytes = canonical_json(provider_run.receipt.to_dict()).encode("utf-8")

@@ -95,17 +95,23 @@ python3 -m harness.cli decide \
 
 ### Run Antigravity live search
 
-Authenticate `agy` outside the harness, then run:
+Authenticate `agy` outside the harness. The admission smoke profile is intentionally pinned to one locally enumerated model and to both timeout layers:
 
 ```bash
 python3 -m harness.cli run-agy \
   --claim examples/live-search/claim.json \
   --policy config/source-policy.example.json \
   --model-knowledge-cutoff 2025-12-01T00:00:00Z \
+  --model gemini-3.6-flash-low \
+  --effort low \
+  --provider-print-timeout 300 \
+  --outer-timeout 330 \
   --lake .tvlake
 ```
 
-Do not add an unsafe permission-bypass flag for research over untrusted pages. Keep the working directory read-only or disposable when possible.
+The profile was checked against `agy` 1.1.12. Before a later admission run, confirm that the pinned model still appears in `agy models`; do not silently substitute another model. The outer timeout must remain strictly greater than the provider print timeout. Do not add an unsafe permission-bypass flag for research over untrusted pages. Keep the working directory read-only or disposable when possible.
+
+Migration from the pre-timeout-contract interface is explicit: replace the ambiguous CLI option `--provider-timeout` with `--outer-timeout`, add `--provider-print-timeout`, and ensure the outer value is larger. Python callers must likewise rename `AgyProvider.run(timeout_seconds=...)` and `run_live_verification(timeout_seconds=...)` to `outer_timeout_seconds=...`. Invalid old configurations fail before a provider subprocess starts. The two new receipt properties remain optional in the v1 JSON Schema so historical v1 receipts continue to validate; newly generated receipts always populate them.
 
 ### Inspect and verify memory
 

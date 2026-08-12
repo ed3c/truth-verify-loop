@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from datetime import datetime
+from decimal import Decimal
 import json
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -74,6 +76,13 @@ TERMINAL_RESULT_KEYS = (
 )
 
 
+def _format_duration_seconds(value: float) -> str:
+    text = format(Decimal(str(value)), "f")
+    if "." in text:
+        text = text.rstrip("0").rstrip(".")
+    return f"{text}s"
+
+
 class ProviderError(RuntimeError):
     """Raised when a provider cannot produce a contract-compliant result."""
 
@@ -95,6 +104,8 @@ class ProviderReceipt:
     ended_at: datetime
     exit_code: int | None
     timed_out: bool
+    provider_print_timeout_seconds: float | None
+    outer_timeout_seconds: float | None
     stdout_sha256: str
     stderr_sha256: str
     environment_keys: tuple[str, ...]
@@ -138,6 +149,7 @@ class AgyProvider:
         model: str | None = None,
         effort: str | None = None,
         output_format: str = "stream-json",
+        print_timeout_seconds: float = 300.0,
         extra_args: Sequence[str] = (),
         env_allowlist: Sequence[str] = DEFAULT_ENV_ALLOWLIST,
     ) -> None:
@@ -145,6 +157,8 @@ class AgyProvider:
             raise ContractError("provider binary must not be empty")
         if output_format not in {"json", "stream-json"}:
             raise ContractError("output_format must be json or stream-json")
+        if not math.isfinite(print_timeout_seconds) or print_timeout_seconds <= 0:
+            raise ContractError("print_timeout_seconds must be finite and positive")
         if any("\x00" in arg for arg in extra_args):
             raise ContractError("provider arguments may not contain NUL")
         reserved = {
@@ -152,6 +166,7 @@ class AgyProvider:
             "-p",
             "--output-format",
             "--json-schema",
+            "--print-timeout",
             "--model",
             "--effort",
             "--dangerously-skip-permissions",
@@ -168,6 +183,7 @@ class AgyProvider:
         self.model = model
         self.effort = effort
         self.output_format = output_format
+        self.print_timeout_seconds = print_timeout_seconds
         self.extra_args = tuple(extra_args)
         self.env_allowlist = tuple(dict.fromkeys(env_allowlist))
 
@@ -197,6 +213,8 @@ class AgyProvider:
             self.output_format,
             "--json-schema",
             SEARCH_RESULT_SCHEMA_JSON,
+            "--print-timeout",
+            _format_duration_seconds(self.print_timeout_seconds),
         ]
         if self.model:
             command.extend(["--model", self.model])
@@ -210,11 +228,17 @@ class AgyProvider:
         prompt: str,
         *,
         cwd: Path | str,
-        timeout_seconds: float = 90.0,
+        outer_timeout_seconds: float = 330.0,
         instruction_files: Iterable[Path] = (),
     ) -> ProviderRun:
-        if timeout_seconds <= 0:
-            raise ContractError("timeout_seconds must be positive")
+        if (
+            not math.isfinite(outer_timeout_seconds)
+            or outer_timeout_seconds <= self.print_timeout_seconds
+        ):
+            raise ContractError(
+                "outer_timeout_seconds must be finite and greater than provider print timeout "
+                f"({self.print_timeout_seconds:g}s)"
+            )
         workdir = Path(cwd).expanduser().resolve()
         if not workdir.is_dir():
             raise ProviderError(f"provider cwd is not a directory: {workdir}")
@@ -247,7 +271,7 @@ class AgyProvider:
                 stdin=subprocess.DEVNULL,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                timeout=timeout_seconds,
+                timeout=outer_timeout_seconds,
                 check=False,
             )
             stdout = completed.stdout
@@ -279,6 +303,8 @@ class AgyProvider:
             ended_at=ended,
             exit_code=exit_code,
             timed_out=timed_out,
+            provider_print_timeout_seconds=self.print_timeout_seconds,
+            outer_timeout_seconds=outer_timeout_seconds,
             stdout_sha256=sha256_bytes(stdout),
             stderr_sha256=sha256_bytes(stderr),
             environment_keys=tuple(sorted(env)),
@@ -314,6 +340,8 @@ class FixtureProvider:
             ended_at=utc_now(),
             exit_code=0,
             timed_out=False,
+            provider_print_timeout_seconds=None,
+            outer_timeout_seconds=None,
             stdout_sha256=sha256_bytes(raw),
             stderr_sha256=sha256_bytes(b""),
             environment_keys=(),

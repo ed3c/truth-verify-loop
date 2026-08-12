@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 import gc
 from pathlib import Path
+import sys
 import tempfile
 import unittest
 import warnings
@@ -97,30 +98,31 @@ class LakeTests(unittest.TestCase):
             "SUPPORTED",
         )
 
-    def test_public_lake_operations_release_sqlite_connections(self):
+    def test_representative_lake_operations_raise_no_resource_errors(self):
         with tempfile.TemporaryDirectory() as directory:
-            with warnings.catch_warnings(record=True) as caught:
-                warnings.simplefilter("always", ResourceWarning)
-                lake = EvidenceLake(Path(directory) / "lake")
-                lake.initialize()
-                lake.upsert_claim(make_claim())
-                lake.current_claim("c-lake")
-                lake.evidence_for_claim("c-lake")
-                lake.current_closure("c-lake")
-                lake.current_document_for_uri("https://example.invalid")
-                lake.search_records("MAX_RETRIES")
-                lake.search_documents("MAX_RETRIES")
-                lake.write_manifest()
-                lake.rebuild_hot()
-                del lake
-                gc.collect()
+            unraisable_errors = []
+            original_unraisablehook = sys.unraisablehook
+            try:
+                sys.unraisablehook = unraisable_errors.append
+                with warnings.catch_warnings():
+                    warnings.simplefilter("error", ResourceWarning)
+                    lake = EvidenceLake(Path(directory) / "lake")
+                    lake.initialize()
+                    lake.upsert_claim(make_claim())
+                    lake.current_claim("c-lake")
+                    lake.evidence_for_claim("c-lake")
+                    lake.current_closure("c-lake")
+                    lake.current_document_for_uri("https://example.invalid")
+                    lake.search_records("MAX_RETRIES")
+                    lake.search_documents("MAX_RETRIES")
+                    lake.write_manifest()
+                    lake.rebuild_hot()
+                    del lake
+                    gc.collect()
+            finally:
+                sys.unraisablehook = original_unraisablehook
 
-            resource_warnings = [
-                str(item.message)
-                for item in caught
-                if issubclass(item.category, ResourceWarning)
-            ]
-            self.assertEqual(resource_warnings, [])
+            self.assertEqual(unraisable_errors, [])
 
     def test_evidence_cannot_be_indexed_without_both_blobs(self):
         with self.assertRaises(ContractError):

@@ -1,0 +1,14 @@
+{
+  "schema": "github-delivery-registry/v1",
+  "repo_root": "..",
+  "lines": [
+    {
+      "id": "truth-verify-loop-delivery",
+      "github_repo": "ed3c/truth-verify-loop",
+      "github_repository_id": "R_kgDOTy7yhw",
+      "artifact_path": ".github-delivery/DELIVERY.md",
+      "receipt_path": ".github-delivery/receipts/truth-verify-loop-delivery.json",
+      "publication_path": ".github-delivery/publications/truth-verify-loop-delivery.json"
+    }
+  ]
+}

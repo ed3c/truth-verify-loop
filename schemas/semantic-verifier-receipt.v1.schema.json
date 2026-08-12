@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/truth-verify-loop/schemas/semantic-verifier-receipt.v1.schema.json",
+  "title": "Truth Verify Loop Semantic Verifier Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "family",
+    "provider",
+    "provider_version",
+    "model",
+    "prompt_sha256",
+    "instruction_hashes",
+    "output_sha256",
+    "started_at",
+    "ended_at",
+    "status",
+    "exit_code",
+    "timed_out",
+    "attempt_kind",
+    "usage"
+  ],
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "succeeded"}}},
+      "then": {
+        "properties": {
+          "exit_code": {"const": 0},
+          "timed_out": {"const": false}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "timeout"}}},
+      "then": {"properties": {"timed_out": {"const": true}}}
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {"enum": ["failed", "discarded"]}
+        }
+      },
+      "then": {"properties": {"timed_out": {"const": false}}}
+    }
+  ],
+  "properties": {
+    "schema": {"const": "tvl.semantic-verifier-receipt.v1"},
+    "family": {"type": "string", "minLength": 1},
+    "provider": {"type": "string", "minLength": 1},
+    "provider_version": {"type": ["string", "null"]},
+    "model": {"type": ["string", "null"]},
+    "prompt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "instruction_hashes": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    },
+    "output_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "started_at": {"type": "string", "format": "date-time"},
+    "ended_at": {"type": "string", "format": "date-time"},
+    "status": {"enum": ["succeeded", "failed", "timeout", "discarded"]},
+    "exit_code": {"type": ["integer", "null"]},
+    "timed_out": {"type": "boolean"},
+    "attempt_kind": {"enum": ["primary", "recovery"]},
+    "usage": {
+      "type": "object",
+      "additionalProperties": {"type": "number", "minimum": 0}
+    },
+    "command_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "stderr_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "failure_reason": {"type": "string", "minLength": 1},
+    "stream_capture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["limit_bytes_per_channel", "stdout", "stderr"],
+      "properties": {
+        "limit_bytes_per_channel": {"type": "integer", "minimum": 1},
+        "stdout": {"$ref": "#/$defs/capturedStream"},
+        "stderr": {"$ref": "#/$defs/capturedStream"}
+      }
+    }
+  },
+  "$defs": {
+    "capturedStream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["captured_bytes", "truncated"],
+      "properties": {
+        "captured_bytes": {"type": "integer", "minimum": 0},
+        "truncated": {"type": "boolean"}
+      }
+    }
+  }
+}

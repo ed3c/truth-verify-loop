@@ -266,6 +266,22 @@ An accepted evidence record contains:
 
 The lake refuses to index evidence unless both the source blob and provider receipt blob exist.
 
+### 9.1 Semantic review dispatch
+
+Schemas:
+
+- [`schemas/semantic-review-request.v1.schema.json`](../../schemas/semantic-review-request.v1.schema.json)
+- [`schemas/semantic-judge-request.v1.schema.json`](../../schemas/semantic-judge-request.v1.schema.json)
+- [`schemas/semantic-review.v1.schema.json`](../../schemas/semantic-review.v1.schema.json)
+- [`schemas/semantic-verifier-receipt.v1.schema.json`](../../schemas/semantic-verifier-receipt.v1.schema.json)
+- [`schemas/semantic-dispatch.v1.schema.json`](../../schemas/semantic-dispatch.v1.schema.json)
+
+`SemanticDispatcher` sends every configured family an isolated copy of the same data-only batch: scoped claims, exact quotes, quote hashes, relationship proposals, and content-addressed source receipts pinned to document snapshot IDs. It never includes sealed truth, mutation ledgers, authority decisions, or prior reviewer labels. Each adapter declares a configured provider/model identity and every returned attempt receipt must match it. The search provider identity is excluded from independent-review coverage even if an adapter renames the family; multiple labels backed by the same identity count once, while conflicting aliases of one identity are all discarded so the gate fails closed.
+
+Aggregation is deterministic. `ENTAILS` validates the proposed relationship, which may be either `supports` or `refutes`. Matching non-abstaining verdicts resolve directly; successful adapters must return exactly one review per request, so missing output cannot masquerade as abstention. `ABSTAIN` remains explicit but neither counts as family coverage nor creates a disagreement. Only conflicting `ENTAILS` and `DOES_NOT_ENTAIL` verdicts may enter a separately configured fresh judge, and the judge receives anonymized positions under a bounded request limit. Deterministic citation, freshness, authority, corroboration, and conflict gates remain outside this model decision.
+
+Verifier attempt chains must begin with a primary attempt, remain chronological, and use recovery attempts only after a non-successful predecessor. They preserve family, provider, provider version, model, prompt and instruction hashes, output hash, timestamps, status, exit code, timeout, attempt kind, usage, cost, and latency for failed, timed-out, discarded, and recovery attempts. The dispatch records a receipt-bound disposition and reason for every run. The orchestration path stores every attempt receipt as a content-addressed blob and appends the dispatch to the `semantic-reviews` ledger before reviewed evidence is indexed.
+
 ## 10. Evidence Closure
 
 Schema: [`schemas/evidence-closure.v1.schema.json`](../../schemas/evidence-closure.v1.schema.json)

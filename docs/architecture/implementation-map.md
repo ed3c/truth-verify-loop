@@ -33,6 +33,7 @@ Claim contract
 | storage facade | `harness/lake.py` | `EvidenceLake` |
 | deterministic closure | `harness/closure.py` | `tvl.evidence-closure.v1` |
 | live orchestration | `harness/orchestrator.py` | retrieval events, accepted evidence, closure, manifest |
+| semantic command adapters | `harness/semantic_adapters.py` | versioned config, bounded data-only stdin/stdout batches, attempt streams and receipts |
 | operator interface | `harness/cli.py` | `decide`, `run-fixture`, `run-agy`, `verify-lake`, `manifest`, `rebuild-hot`, `search-hot` |
 
 ## Durable record flow
@@ -83,6 +84,8 @@ The state is categorical: `SUPPORTED`, `REFUTED`, `CONFLICTED`, `STALE`, or `UNV
 | SSRF and executable HTML bodies | `tests/test_retriever.py` |
 | stable URI identity, content revisions, structural chunks | `tests/test_documents.py` |
 | conflict, stale evidence, snippets, semantic-family gates | `tests/test_closure.py` |
+| semantic request isolation, independent dispatch, bounded judge, abstention, and adversarial review fixtures | `tests/test_semantic.py` |
+| versioned adapter config, subprocess failure receipts, retries, and CLI exposure | `tests/test_semantic_adapters.py`, `tests/test_cli.py` |
 | missing blobs, ledger tamper, manifest, snapshot supersession, immutable hot replay | `tests/test_lake.py` |
 
 Run all repository checks with:
@@ -100,11 +103,10 @@ python3 -m harness.cli search-hot --lake .tvlake --query MAX_RETRIES
 
 ## Production sequence
 
-1. #9 — independent semantic verifier dispatch, because high-risk closure must not depend on one search family.
-2. #11 — temporal/conflict/injection/provider A/B evaluation and release budgets.
-3. #8 — PDF, commit-pinned Git, registry, and sandboxed browser capture.
-4. #6 — Parquet/Iceberg storage adapter and time-travel publication.
-5. #7 — W3C PROV, OpenLineage, and OpenTelemetry exporters.
-6. #10 — egress isolation, signatures/object lock, multi-tenancy, and lifecycle governance.
+1. #11 — temporal/conflict/injection/provider A/B evaluation and release budgets.
+2. #8 — PDF, commit-pinned Git, registry, and sandboxed browser capture.
+3. #6 — Parquet/Iceberg storage adapter and time-travel publication.
+4. #7 — W3C PROV, OpenLineage, and OpenTelemetry exporters.
+5. #10 — egress isolation, signatures/object lock, multi-tenancy, and lifecycle governance.
 
 This order first proves correctness, then broadens capture, then scales storage and governance. Storage scale must not outrun the ability to detect false support.

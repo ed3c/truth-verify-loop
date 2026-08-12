@@ -1,0 +1,40 @@
+{
+  "_schema": "forgejo-delivery-registry@0.1.0",
+  "forge": {
+    "kind": "forgejo",
+    "base_url": "http://localhost:3000",
+    "api_base": "http://localhost:3000/api/v1",
+    "auth": "git credential helper; credentials stay in memory"
+  },
+  "required_receipt_fields": [
+    "line",
+    "repo",
+    "issues",
+    "pr",
+    "milestone_url",
+    "synced_at_commit"
+  ],
+  "lines": [
+    {
+      "line": "truth-verify-loop-github-sync",
+      "forgejo_repo": "neon/truth-verify-loop",
+      "prd_issue": "http://localhost:3000/neon/truth-verify-loop/issues/1",
+      "milestone_url": "http://localhost:3000/neon/truth-verify-loop/milestone/4",
+      "materialized_path": ".",
+      "issue_urls": [
+        "http://localhost:3000/neon/truth-verify-loop/issues/2",
+        "http://localhost:3000/neon/truth-verify-loop/issues/3",
+        "http://localhost:3000/neon/truth-verify-loop/issues/4",
+        "http://localhost:3000/neon/truth-verify-loop/issues/5",
+        "http://localhost:3000/neon/truth-verify-loop/issues/6",
+        "http://localhost:3000/neon/truth-verify-loop/issues/7",
+        "http://localhost:3000/neon/truth-verify-loop/issues/10"
+      ],
+      "pr_urls": [
+        "http://localhost:3000/neon/truth-verify-loop/pulls/8",
+        "http://localhost:3000/neon/truth-verify-loop/pulls/9"
+      ],
+      "note": "Forgejo is the local tracking projection. GitHub receipts remain separate evidence and are not rewritten as Forgejo receipts."
+    }
+  ]
+}

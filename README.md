@@ -50,12 +50,26 @@ python3 -m harness.cli run-agy \
   --effort low \
   --provider-print-timeout 300 \
   --outer-timeout 330 \
+  --semantic-config config/semantic-verifiers.example.json \
   --lake .tvlake
 ```
 
+Copy the semantic config before use and replace every `replace-with-*` command,
+provider, and model value with two genuinely independent verifier identities and
+an optional third judge identity. Commands use JSON on stdin/stdout; their
+contracts are published as `schemas/semantic-review-command.v1.schema.json` and
+`schemas/semantic-review-batch.v1.schema.json`. The example placeholders
+intentionally fail loudly until configured.
+
 The provider adapter uses a non-shell argument vector, pins the `tvl.search-result.v1` output schema, and accepts candidates only from the terminal provider result. `step_update`, tool output, and fetched-page text cannot become the final result envelope. Candidate sources remain untrusted until the deterministic retriever captures the URL, blocks private-network targets, hashes the response, and finds the exact quote.
 
-Source capture proves provenance, not entailment. Medium-risk claims require one recorded semantic verifier family, while high- and critical-risk claims require two independent verifier families before closure. The current `run-agy` path records the search provider as one semantic family, so high- and critical-risk claims remain fail-closed until independent reviews are supplied; provider-neutral dispatch is tracked in [issue #9](https://github.com/ed3c/truth-verify-loop/issues/9).
+Source capture proves provenance, not entailment. Medium-risk claims require one recorded semantic verifier family, while high- and critical-risk claims require two independent verifier families before closure. `harness.semantic.SemanticDispatcher` is the provider-neutral review seam: callers inject independently configured verifier adapters and may configure a fresh bounded judge for genuine `ENTAILS`/`DOES_NOT_ENTAIL` disagreements. Each reviewer receives an isolated data-only batch containing scoped claims, exact quotes, and content-addressed document-snapshot receipts; it does not contain sealed truth, authority decisions, or other reviewer labels. `ENTAILS` means that the quote entails the proposed `supports` or `refutes` relationship—it does not always mean support.
+
+When a dispatcher is passed to `run_live_verification`, every adapter declares a configured provider/model identity and its receipts must match that identity. The search provider identity is excluded from reviewer coverage even if a family is renamed, and multiple family labels backed by the same provider/model count once. Conflicting aliases of one identity are all discarded rather than resolved by family name. Every chronological verifier attempt chain—including failed, timeout, discarded, and recovery attempts—retains provider/model/version, prompt/instruction/output hashes, usage, cost, and latency; the dispatch also records whether each run was accepted, discarded, or ineligible and why. Successful adapters must return exactly one receipt-bound review per request; `ABSTAIN` is explicit, does not count as family coverage, and does not trigger the judge. A non-entailing or unresolved quote is stored as contextual evidence and cannot close the claim.
+
+`run-agy --semantic-config` constructs subprocess adapters from the versioned configuration and enforces provider/model identity independence before live search starts. Without that option, the CLI retains the MVP compatibility behavior of recording the search provider as one family; that fallback cannot satisfy a high- or critical-risk two-family policy.
+
+Semantic commands start in an empty disposable working directory with a minimal environment and receive only the versioned request on stdin. Stdout and stderr are each bounded to 1 MiB; every bounded attempt stream and receipt is stored in cold memory, including failures, timeouts, and recoveries. This is process hygiene, not an OS sandbox: configured commands are trusted local adapters and production deployments still need a sandbox or container when executing untrusted verifier code.
 
 Source authority comes only from `config/source-policy.example.json`. Claim-level `trusted_domains` can guide retrieval but cannot promote an unknown domain to an official or primary source class.
 
@@ -82,6 +96,7 @@ python3 -m harness.cli search-hot --lake .tvlake --query Python
 - [deterministic hot replay](harness/lake_rebuild.py)
 - [portable schemas](schemas)
 - [source authority policy](config/source-policy.example.json)
+- [semantic verifier configuration](config/semantic-verifiers.example.json)
 - [deterministic core](core/tv-score.py)
 - [synthetic core fixture](examples/synthetic/fixtures)
 - [fixture topology checker](scripts/check_fixture_layout.py)

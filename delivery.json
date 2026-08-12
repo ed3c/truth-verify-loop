@@ -1,0 +1,18 @@
+{
+  "_note": "This receipt binds the local Forgejo tracking projection to this repository. Live Forgejo state must be read from Forgejo; this file is a zero-network delivery receipt.",
+  "line": "truth-verify-loop-github-sync",
+  "repo": "neon/truth-verify-loop",
+  "issues": [
+    "http://localhost:3000/neon/truth-verify-loop/issues/1",
+    "http://localhost:3000/neon/truth-verify-loop/issues/2",
+    "http://localhost:3000/neon/truth-verify-loop/issues/3",
+    "http://localhost:3000/neon/truth-verify-loop/issues/4",
+    "http://localhost:3000/neon/truth-verify-loop/issues/5",
+    "http://localhost:3000/neon/truth-verify-loop/issues/6",
+    "http://localhost:3000/neon/truth-verify-loop/issues/7",
+    "http://localhost:3000/neon/truth-verify-loop/issues/10"
+  ],
+  "pr": "http://localhost:3000/neon/truth-verify-loop/pulls/9",
+  "milestone_url": "http://localhost:3000/neon/truth-verify-loop/milestone/4",
+  "synced_at_commit": "cc18394ecf585da12fc5304365351164902047a2"
+}

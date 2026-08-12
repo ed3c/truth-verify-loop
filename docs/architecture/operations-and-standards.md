@@ -106,12 +106,19 @@ python3 -m harness.cli run-agy \
   --effort low \
   --provider-print-timeout 300 \
   --outer-timeout 330 \
+  --semantic-config config/semantic-verifiers.example.json \
   --lake .tvlake
 ```
 
 The profile was checked against `agy` 1.1.12. Before a later admission run, confirm that the pinned model still appears in `agy models`; do not silently substitute another model. The outer timeout must remain strictly greater than the provider print timeout. Do not add an unsafe permission-bypass flag for research over untrusted pages. Keep the working directory read-only or disposable when possible.
 
 Migration from the pre-timeout-contract interface is explicit: replace the ambiguous CLI option `--provider-timeout` with `--outer-timeout`, add `--provider-print-timeout`, and ensure the outer value is larger. Python callers must likewise rename `AgyProvider.run(timeout_seconds=...)` and `run_live_verification(timeout_seconds=...)` to `outer_timeout_seconds=...`. Invalid old configurations fail before a provider subprocess starts. The two new receipt properties remain optional in the v1 JSON Schema so historical v1 receipts continue to validate; newly generated receipts always populate them.
+
+`--semantic-config` is optional only for MVP compatibility. Medium-risk claims need one independent semantic family; high- and critical-risk claims need two, so production high-risk runs must configure it. Start from `config/semantic-verifiers.example.json`, replace all placeholder executables and identities, and keep instruction files beside the config. The loader rejects duplicate provider/model identities, a judge identity reused by a verifier, shell executables, more than three attempts, and instruction paths that escape the config directory.
+
+Each command starts in an empty disposable working directory with only `PATH`, locale/terminal keys, and disposable `HOME`/`TMPDIR`. It receives one `tvl.semantic-review-command.v1` JSON object on stdin and must write exactly one `tvl.semantic-review-batch.v1` object to stdout. Family and receipt identity are bound locally rather than trusted from command output. Stdout and stderr are each capped at 1 MiB; exceeding either limit kills the subprocess group and fails the attempt. Pipe draining after process exit is also bounded, so a descendant that escapes the group cannot suppress the attempt receipt by holding a pipe open. Non-zero exits, timeouts, malformed JSON, invalid reviews, and invalid usage remain fail-closed. Every bounded stdout/stderr stream is content-addressed in cold memory, while the receipt records their hashes, captured byte counts, per-channel truncation flags, and the configured limit rather than raw stderr. Valid usage can still be recovered from a non-zero attempt without accepting its reviews.
+
+This boundary limits ambient data and accidental repository reads, but it is not an OS filesystem, network, or syscall sandbox. Configured commands are trusted local adapters. Production deployments that execute third-party verifier code must add the process-isolation control already listed in the threat model. The schemas are in `schemas/semantic-verifier-config.v1.schema.json`, `schemas/semantic-review-command.v1.schema.json`, and `schemas/semantic-review-batch.v1.schema.json`.
 
 ### Inspect and verify memory
 

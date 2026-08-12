@@ -17,6 +17,7 @@ from .model import Claim, Evidence, canonical_json, format_timestamp, sha256_tex
 from .policy import SourcePolicy, decide_live_search
 from .providers import AgyProvider, ProviderError, build_search_prompt, extract_search_envelope
 from .retriever import RetrievalError, SafeHttpRetriever, locate_quote
+from .semantic import SemanticDispatcher, SemanticReviewRequest, VerifierIdentity
 
 
 class HarnessError(RuntimeError):
@@ -63,6 +64,7 @@ def run_live_verification(
     model_knowledge_cutoff: str | datetime | None,
     outer_timeout_seconds: float = 330.0,
     instruction_files: tuple[Path, ...] = (),
+    semantic_dispatcher: SemanticDispatcher | None = None,
 ) -> dict[str, Any]:
     lake.initialize()
     lake.upsert_claim(claim)
@@ -197,6 +199,20 @@ def run_live_verification(
             retrievals.append(event)
             if not verified:
                 continue
+            citation = {
+                "quote_verified": True,
+                "capture_media_type": fetched.media_type,
+                "capture_scope": "full_source",
+                "document_id": snapshot.document_id,
+                "snapshot_id": snapshot.snapshot_id,
+                "chunk_id": cited_chunk.chunk_id if cited_chunk else None,
+                "start": quote_span[0] if quote_span else None,
+                "end": quote_span[1] if quote_span else None,
+            }
+            if semantic_dispatcher is None:
+                citation["semantic_verifier_families"] = [
+                    provider_run.receipt.provider
+                ]
             evidence = Evidence.from_dict(
                 {
                     "evidence_id": _stable_evidence_id(
@@ -214,20 +230,9 @@ def run_live_verification(
                     "provider_receipt_sha256": receipt_blob["content_sha256"],
                     "title": candidate.title,
                     "published_at": _parse_optional_published_at(candidate.published_at),
-                    "citation": {
-                        "quote_verified": True,
-                        "capture_media_type": fetched.media_type,
-                        "capture_scope": "full_source",
-                        "document_id": snapshot.document_id,
-                        "snapshot_id": snapshot.snapshot_id,
-                        "chunk_id": cited_chunk.chunk_id if cited_chunk else None,
-                        "start": quote_span[0] if quote_span else None,
-                        "end": quote_span[1] if quote_span else None,
-                        "semantic_verifier_families": [provider_run.receipt.provider],
-                    },
+                    "citation": citation,
                 }
             )
-            lake.upsert_evidence(evidence)
             accepted.append(evidence)
         except RetrievalError as exc:
             event = {
@@ -241,6 +246,97 @@ def run_live_verification(
             }
             lake.append_ledger("bronze", "retrieval-events", event)
             retrievals.append(event)
+
+    semantic_dispatch_payload: dict[str, Any] | None = None
+    if semantic_dispatcher is not None and accepted:
+        requirement = policy.requirement_for(claim.risk)
+        dispatch = semantic_dispatcher.dispatch(
+            [SemanticReviewRequest.from_evidence(claim, item) for item in accepted],
+            minimum_families=max(
+                1, requirement.min_semantic_verifier_families
+            ),
+            search_provider_identity=VerifierIdentity(
+                provider=provider_run.receipt.provider,
+                model=provider_run.receipt.model,
+            ),
+        )
+        semantic_dispatch_payload = dispatch.to_dict()
+        for run in dispatch.runs:
+            receipts_by_digest = {
+                receipt.digest: receipt for receipt in run.attempt_receipts
+            }
+            for receipt in run.attempt_receipts:
+                lake.store_blob(
+                    canonical_json(receipt.to_dict()).encode("utf-8"),
+                    source_uri=(
+                        "urn:tvl:semantic-verifier-receipt:" + receipt.family
+                    ),
+                    media_type="application/json",
+                    capture_scope="semantic_verifier_receipt",
+                    retrieved_at=receipt.ended_at,
+                )
+            for stream in run.attempt_streams:
+                receipt = receipts_by_digest.get(stream.receipt_sha256)
+                if receipt is None:
+                    raise HarnessError(
+                        "semantic attempt stream does not match a verifier receipt"
+                    )
+                for channel, raw in (
+                    ("stdout", stream.stdout),
+                    ("stderr", stream.stderr),
+                ):
+                    lake.store_blob(
+                        raw,
+                        source_uri=(
+                            "urn:tvl:semantic-verifier-stream:"
+                            + stream.receipt_sha256
+                            + ":"
+                            + channel
+                        ),
+                        media_type=(
+                            "application/json"
+                            if channel == "stdout"
+                            else "text/plain"
+                        ),
+                        capture_scope="semantic_verifier_stream",
+                        retrieved_at=receipt.ended_at,
+                    )
+        lake.append_ledger(
+            "silver",
+            "semantic-reviews",
+            {
+                "claim_id": claim.claim_id,
+                "dispatch": semantic_dispatch_payload,
+            },
+        )
+        reviewed: list[Evidence] = []
+        for item in accepted:
+            aggregate = dispatch.aggregates[item.evidence_id]
+            citation = dict(item.citation)
+            citation["semantic_review"] = aggregate.to_dict()
+            citation["semantic_review_receipt_sha256s"] = sorted(
+                {
+                    review.verifier_receipt_sha256
+                    for review in dispatch.reviews
+                    if review.evidence_id == item.evidence_id
+                }
+            )
+            relationship = item.relationship
+            if aggregate.verdict == "ENTAILS" and aggregate.policy_satisfied:
+                citation["semantic_verifier_families"] = list(
+                    aggregate.accepted_families
+                )
+            else:
+                citation.pop("semantic_verifier_families", None)
+                relationship = "context"
+            payload = item.to_dict()
+            payload["relationship"] = relationship
+            payload["citation"] = citation
+            reviewed.append(Evidence.from_dict(payload))
+        accepted = reviewed
+
+    for evidence in accepted:
+        lake.upsert_evidence(evidence)
 
     all_evidence = lake.evidence_for_claim(claim.claim_id)
     closure = close_claim(claim, all_evidence, policy=policy)
@@ -269,5 +365,6 @@ def run_live_verification(
         "decision": decision.to_dict(),
         "closure": closure,
         "retrievals": retrievals,
+        "semantic_dispatch": semantic_dispatch_payload,
         "manifest": manifest.as_posix(),
     }

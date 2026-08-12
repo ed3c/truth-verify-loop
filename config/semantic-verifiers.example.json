@@ -1,0 +1,36 @@
+{
+  "schema": "tvl.semantic-verifier-config.v1",
+  "verifiers": [
+    {
+      "family": "independent-family-a",
+      "provider": "replace-with-provider-a",
+      "provider_version": null,
+      "model": "replace-with-model-a",
+      "command": ["replace-with-semantic-verifier-a", "--stdio-json"],
+      "timeout_seconds": 120,
+      "max_attempts": 2,
+      "instruction_files": ["semantic-verifier-instructions.example.md"]
+    },
+    {
+      "family": "independent-family-b",
+      "provider": "replace-with-provider-b",
+      "provider_version": null,
+      "model": "replace-with-model-b",
+      "command": ["replace-with-semantic-verifier-b", "--stdio-json"],
+      "timeout_seconds": 120,
+      "max_attempts": 2,
+      "instruction_files": ["semantic-verifier-instructions.example.md"]
+    }
+  ],
+  "judge": {
+    "family": "fresh-judge",
+    "provider": "replace-with-judge-provider",
+    "provider_version": null,
+    "model": "replace-with-judge-model",
+    "command": ["replace-with-semantic-judge", "--stdio-json"],
+    "timeout_seconds": 120,
+    "max_attempts": 1,
+    "instruction_files": ["semantic-verifier-instructions.example.md"]
+  },
+  "max_judge_requests": 8
+}

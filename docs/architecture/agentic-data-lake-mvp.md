@@ -204,7 +204,7 @@ The provider receipt records:
 - inherited environment key names and a non-reversible fingerprint;
 - token and cache-read usage when present.
 
-The requested final payload is `tvl.search-result.v1`: candidate URLs, relationships, and short verbatim quotes. For typed streams, the parser accepts that envelope only from the terminal `result` event. It never scans `step_update`, tool output, or fetched-page payloads for a final envelope. A missing terminal result, malformed schema, or non-zero provider exit fails closed.
+The requested final payload is `tvl.search-result.v1`: candidate URLs, relationships, and short verbatim quotes. For typed streams, the parser accepts the current `event` discriminator and the legacy `type` discriminator, but rejects a stream that mixes them. It requires exactly one terminal `result` event containing exactly one result envelope, and accepts the envelope only from that event. It never scans `step_update`, tool output, or fetched-page payloads for a final envelope; those events remain available for usage accounting. A missing or ambiguous terminal result, malformed schema, or non-zero provider exit fails closed.
 
 ## 7. Independent source capture
 

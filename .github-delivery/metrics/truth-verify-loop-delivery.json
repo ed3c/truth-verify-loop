@@ -1,0 +1,228 @@
+{
+  "fetched_at": "2026-08-12T04:04:52Z",
+  "github_repo": "ed3c/truth-verify-loop",
+  "github_repository_id": "R_kgDOTy7yhw",
+  "line": "truth-verify-loop-delivery",
+  "percentiles": {
+    "blocked_seconds": {
+      "p50": 0,
+      "p85": 0
+    },
+    "cycle_seconds": {
+      "p50": 12422,
+      "p85": 12422
+    },
+    "lead_seconds": {
+      "p50": 14248,
+      "p85": 14248
+    },
+    "queue_seconds": {
+      "p50": 1331,
+      "p85": 2629
+    },
+    "review_seconds": {
+      "p50": 12422,
+      "p85": 12422
+    }
+  },
+  "project_url": "https://github.com/users/ed3c/projects/5",
+  "quality": {
+    "first_pass_rate": null,
+    "redaction_leakage_rate": null,
+    "reopen_rate": 0.0
+  },
+  "schema": "github-delivery-metrics/v1",
+  "slices": [
+    {
+      "accepted_pr": null,
+      "blocked_seconds": 0,
+      "currently_blocked": false,
+      "cycle_seconds": null,
+      "issue_number": 1,
+      "issue_state": "CLOSED",
+      "lead_seconds": null,
+      "queue_seconds": null,
+      "reopened": false,
+      "review_seconds": null,
+      "started_pr": null,
+      "title": "PRD: publish a measurable claim-verification loop"
+    },
+    {
+      "accepted_pr": 3,
+      "blocked_seconds": 0,
+      "currently_blocked": false,
+      "cycle_seconds": 12422,
+      "issue_number": 2,
+      "issue_state": "CLOSED",
+      "lead_seconds": 14248,
+      "queue_seconds": 1826,
+      "reopened": false,
+      "review_seconds": 12422,
+      "started_pr": 3,
+      "title": "Slice: export the deterministic verification core"
+    },
+    {
+      "accepted_pr": null,
+      "blocked_seconds": 0,
+      "currently_blocked": false,
+      "cycle_seconds": null,
+      "issue_number": 6,
+      "issue_state": "OPEN",
+      "lead_seconds": null,
+      "queue_seconds": null,
+      "reopened": false,
+      "review_seconds": null,
+      "started_pr": null,
+      "title": "Production: add an Iceberg/Parquet evidence-lake adapter"
+    },
+    {
+      "accepted_pr": null,
+      "blocked_seconds": 0,
+      "currently_blocked": false,
+      "cycle_seconds": null,
+      "issue_number": 7,
+      "issue_state": "OPEN",
+      "lead_seconds": null,
+      "queue_seconds": null,
+      "reopened": false,
+      "review_seconds": null,
+      "started_pr": null,
+      "title": "Production: export W3C PROV, OpenLineage, and OpenTelemetry receipts"
+    },
+    {
+      "accepted_pr": null,
+      "blocked_seconds": 0,
+      "currently_blocked": false,
+      "cycle_seconds": null,
+      "issue_number": 8,
+      "issue_state": "OPEN",
+      "lead_seconds": null,
+      "queue_seconds": null,
+      "reopened": false,
+      "review_seconds": null,
+      "started_pr": null,
+      "title": "Production: add PDF, Git, registry, and sandboxed browser capture adapters"
+    },
+    {
+      "accepted_pr": null,
+      "blocked_seconds": 0,
+      "currently_blocked": false,
+      "cycle_seconds": null,
+      "issue_number": 9,
+      "issue_state": "OPEN",
+      "lead_seconds": null,
+      "queue_seconds": null,
+      "reopened": false,
+      "review_seconds": null,
+      "started_pr": null,
+      "title": "MVP+: dispatch independent semantic verifier families"
+    },
+    {
+      "accepted_pr": null,
+      "blocked_seconds": 0,
+      "currently_blocked": false,
+      "cycle_seconds": null,
+      "issue_number": 10,
+      "issue_state": "OPEN",
+      "lead_seconds": null,
+      "queue_seconds": null,
+      "reopened": false,
+      "review_seconds": null,
+      "started_pr": null,
+      "title": "Production: harden egress, integrity, tenancy, and memory lifecycle"
+    },
+    {
+      "accepted_pr": null,
+      "blocked_seconds": 0,
+      "currently_blocked": false,
+      "cycle_seconds": null,
+      "issue_number": 11,
+      "issue_state": "OPEN",
+      "lead_seconds": null,
+      "queue_seconds": null,
+      "reopened": false,
+      "review_seconds": null,
+      "started_pr": null,
+      "title": "Evaluation: build temporal, conflict, injection, and provider A/B suites"
+    },
+    {
+      "accepted_pr": null,
+      "blocked_seconds": 0,
+      "currently_blocked": false,
+      "cycle_seconds": null,
+      "issue_number": 12,
+      "issue_state": "OPEN",
+      "lead_seconds": null,
+      "queue_seconds": null,
+      "reopened": false,
+      "review_seconds": null,
+      "started_pr": null,
+      "title": "Test: canonicalize temporary lake roots on macOS"
+    },
+    {
+      "accepted_pr": null,
+      "blocked_seconds": 0,
+      "currently_blocked": false,
+      "cycle_seconds": null,
+      "issue_number": 13,
+      "issue_state": "OPEN",
+      "lead_seconds": null,
+      "queue_seconds": 998,
+      "reopened": false,
+      "review_seconds": null,
+      "started_pr": 15,
+      "title": "Lake: close SQLite connections created during FTS initialization"
+    },
+    {
+      "accepted_pr": null,
+      "blocked_seconds": 0,
+      "currently_blocked": false,
+      "cycle_seconds": null,
+      "issue_number": 14,
+      "issue_state": "OPEN",
+      "lead_seconds": null,
+      "queue_seconds": null,
+      "reopened": false,
+      "review_seconds": null,
+      "started_pr": null,
+      "title": "Delivery: add registry and zero-network artifact receipts"
+    },
+    {
+      "accepted_pr": null,
+      "blocked_seconds": 0,
+      "currently_blocked": false,
+      "cycle_seconds": null,
+      "issue_number": 16,
+      "issue_state": "OPEN",
+      "lead_seconds": null,
+      "queue_seconds": 1331,
+      "reopened": false,
+      "review_seconds": null,
+      "started_pr": 18,
+      "title": "Provider: accept current agy stream event discriminator"
+    },
+    {
+      "accepted_pr": null,
+      "blocked_seconds": 0,
+      "currently_blocked": false,
+      "cycle_seconds": null,
+      "issue_number": 17,
+      "issue_state": "OPEN",
+      "lead_seconds": null,
+      "queue_seconds": 2629,
+      "reopened": false,
+      "review_seconds": null,
+      "started_pr": 19,
+      "title": "Admission: make harness timeout compatible with agy print timeout"
+    }
+  ],
+  "summary": {
+    "accepted_slices": 1,
+    "blocked_slices": 0,
+    "closed_without_merge": 1,
+    "throughput_28d": 1,
+    "throughput_7d": 1,
+    "total_slices": 13,
+    "wip": 3
+  }
+}

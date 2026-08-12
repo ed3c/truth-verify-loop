@@ -1,0 +1,32 @@
+{
+  "github_repo": "ed3c/truth-verify-loop",
+  "github_repository_id": "R_kgDOTy7yhw",
+  "issue_urls": [
+    "https://github.com/ed3c/truth-verify-loop/issues/1",
+    "https://github.com/ed3c/truth-verify-loop/issues/2",
+    "https://github.com/ed3c/truth-verify-loop/issues/6",
+    "https://github.com/ed3c/truth-verify-loop/issues/7",
+    "https://github.com/ed3c/truth-verify-loop/issues/8",
+    "https://github.com/ed3c/truth-verify-loop/issues/9",
+    "https://github.com/ed3c/truth-verify-loop/issues/10",
+    "https://github.com/ed3c/truth-verify-loop/issues/11",
+    "https://github.com/ed3c/truth-verify-loop/issues/12",
+    "https://github.com/ed3c/truth-verify-loop/issues/13",
+    "https://github.com/ed3c/truth-verify-loop/issues/14",
+    "https://github.com/ed3c/truth-verify-loop/issues/16",
+    "https://github.com/ed3c/truth-verify-loop/issues/17"
+  ],
+  "line": "truth-verify-loop-delivery",
+  "pr_urls": [
+    "https://github.com/ed3c/truth-verify-loop/pull/3",
+    "https://github.com/ed3c/truth-verify-loop/pull/5",
+    "https://github.com/ed3c/truth-verify-loop/pull/15",
+    "https://github.com/ed3c/truth-verify-loop/pull/18",
+    "https://github.com/ed3c/truth-verify-loop/pull/19"
+  ],
+  "prd_issue_url": "https://github.com/ed3c/truth-verify-loop/issues/4",
+  "project_url": "https://github.com/users/ed3c/projects/5",
+  "schema": "github-delivery-receipt/v1",
+  "source_commit": "5bf7726d2feced60f9270eb4eb1d6bbf10f39808",
+  "synced_at": "2026-08-12T04:04:52Z"
+}

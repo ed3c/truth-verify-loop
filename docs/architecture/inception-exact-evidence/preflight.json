@@ -17,8 +17,8 @@
     "packet_digest": "sha256:8ed7553094f26df439f796e25ef83cdbe6916d0c50e8e659905ca12d3bd44ad6",
     "bundle_digest": "sha256:dc4473b3195a738e55eb49c43661b6e1f4ea7f95c66749454776f2003b18ebc3"
   },
-  "owner_issue": "https://github.com/ed3c/truth-verify-loop/issues/23",
-  "upstream_issue": "https://github.com/ed3c/enterprise_agent_system/issues/15",
+  "owner_issue": "ed3c/truth-verify-loop#23",
+  "upstream_issue": "ed3c/enterprise_agent_system#15",
   "interface": "inception/code-source-citation-evidence",
   "state_machine": [
     "EXACT_SUBJECT_BOUND",
@@ -104,7 +104,14 @@
   ],
   "cleanup_contract": {
     "required": true,
-    "inventory": ["path", "process", "network_capture", "lake", "index", "artifact"],
+    "inventory": [
+      "path",
+      "process",
+      "network_capture",
+      "lake",
+      "index",
+      "artifact"
+    ],
     "rollback_subject": "ce0c90f0c9bc87427d433ce537eea7f3a0fca008"
   },
   "forbidden_actions": [

@@ -1,0 +1,128 @@
+{
+  "schema_version": "inception-owner-preflight/v1",
+  "atom_id": "INCEPTION-A3",
+  "stage": "OWNER_IMPLEMENTATION_PREPARATION",
+  "state": "READY_FOR_FIRST_IMPLEMENTATION_COMMIT",
+  "repository": "ed3c/truth-verify-loop",
+  "branch": "agent/inception-a3-exact-evidence",
+  "base_subject": {
+    "commit": "ce0c90f0c9bc87427d433ce537eea7f3a0fca008",
+    "tree": "9ab841a793c4cdbca82a5a31eddb2dcd7485f3c1"
+  },
+  "controller_subject": {
+    "repository": "ed3c/enterprise_agent_system",
+    "pull_request": 29,
+    "commit": "6e0a916fd06dd8635d77c9a8c4d1b475185ea13e",
+    "tree": "c3851a6953d456d0342a9776eed28561c1af0ca1",
+    "packet_digest": "sha256:8ed7553094f26df439f796e25ef83cdbe6916d0c50e8e659905ca12d3bd44ad6",
+    "bundle_digest": "sha256:dc4473b3195a738e55eb49c43661b6e1f4ea7f95c66749454776f2003b18ebc3"
+  },
+  "owner_issue": "https://github.com/ed3c/truth-verify-loop/issues/23",
+  "upstream_issue": "https://github.com/ed3c/enterprise_agent_system/issues/15",
+  "interface": "inception/code-source-citation-evidence",
+  "state_machine": [
+    "EXACT_SUBJECT_BOUND",
+    "PATH_AND_LOCATOR_CONFINED",
+    "PHYSICAL_OR_LEXICAL_READBACK_VERIFIED",
+    "PARSER_COVERAGE_DECLARED",
+    "SYMBOL_SNIPPET_OR_QUOTE_VERIFIED",
+    "SEMANTIC_REVIEW_DISPATCHED",
+    "DISAGREEMENT_OR_ABSTENTION_RECONCILED",
+    "SUPPORTED_OR_REFUTED_OR_CONFLICTED_OR_STALE_OR_UNVERIFIABLE",
+    "REPAIR_OR_HUMAN_REVIEW"
+  ],
+  "existing_mechanisms": [
+    "harness/model.py",
+    "harness/retriever.py",
+    "harness/documents.py",
+    "harness/closure.py",
+    "harness/lake.py",
+    "harness/lake_base.py",
+    "harness/lake_records.py",
+    "harness/lake_documents.py",
+    "harness/lake_rebuild.py",
+    "harness/semantic_adapters.py"
+  ],
+  "writable_paths": [
+    "docs/architecture/inception-exact-evidence/**",
+    "schemas/inception-code-evidence.v1.schema.json",
+    "schemas/inception-citation-claim.v1.schema.json",
+    "harness/inception_evidence.py",
+    "tests/test_inception_evidence.py",
+    "examples/inception-evidence/**",
+    ".github/workflows/inception-a3-evidence.yml"
+  ],
+  "conditional_paths": [
+    {
+      "path": "harness/model.py",
+      "condition": "adapter tests prove a versioned public contract extension is unavoidable"
+    },
+    {
+      "path": "harness/closure.py",
+      "condition": "existing gate composition cannot express the profile without weakening current semantics"
+    }
+  ],
+  "read_only_paths": [
+    "harness/retriever.py",
+    "harness/documents.py",
+    "harness/lake*.py",
+    "harness/semantic*.py",
+    "config/**",
+    "skills/**",
+    "examples/live-search/**"
+  ],
+  "resource_leases": [
+    "fixture-repository:inception-code-evidence",
+    "evidence-lake:inception-a3-fixture",
+    "parser-session:inception-a3"
+  ],
+  "required_evidence_lanes": [
+    "DETERMINISTIC_PHYSICAL",
+    "LEXICAL_CAPTURE",
+    "INDEPENDENT_SEMANTIC",
+    "PRIVATE_SOURCE_SEPARATE"
+  ],
+  "positive_controls": [
+    "repository commit tree and normalized path bind one exact source subject",
+    "line range snippet digest symbol and parser identity are read back independently",
+    "source quote digest and locator match captured bytes",
+    "lexical or physical PASS remains separate from semantic entailment",
+    "failed timeout discarded abstained and conflicting attempts remain visible"
+  ],
+  "mutation_controls": [
+    "mutable or stale repository subject",
+    "path traversal or symlink escape",
+    "out-of-range lines",
+    "snippet digest mismatch",
+    "absent symbol or signature",
+    "parser coverage claimed where unavailable",
+    "quote or locator mismatch",
+    "lexical match promoted to semantic support",
+    "proposer and verifier share one mutable path",
+    "model Judge self-promotes truth or zero hallucination",
+    "private evidence secret or service-account path enters portable receipt"
+  ],
+  "cleanup_contract": {
+    "required": true,
+    "inventory": ["path", "process", "network_capture", "lake", "index", "artifact"],
+    "rollback_subject": "ce0c90f0c9bc87427d433ce537eea7f3a0fca008"
+  },
+  "forbidden_actions": [
+    "mutate source repositories",
+    "persist private source bytes in portable fixtures",
+    "replace categorical closure with one score",
+    "self-promote semantic support",
+    "write canonical task effect Human or release state",
+    "close issues",
+    "merge",
+    "release",
+    "rollback"
+  ],
+  "claims_not_proven": [
+    "No exact-evidence schema or adapter implementation has been added.",
+    "No private or independent evidence run has executed.",
+    "No parser coverage or semantic disagreement canary exists for this subject.",
+    "No business claim, Human admission, merge, release or rollback has occurred."
+  ],
+  "next_transition": "ADD_STRICT_CODE_AND_CITATION_SCHEMAS_AND_FIRST_HOLLOW_CONTROL"
+}

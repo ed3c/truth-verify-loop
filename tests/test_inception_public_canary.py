@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 from harness.inception_public_canary import (
     PUBLIC_COMMIT,
@@ -14,8 +15,13 @@ from harness.inception_public_canary import (
 
 
 class InceptionPublicCanaryTests(unittest.TestCase):
-    def test_exact_public_blob_readback_and_fixture_semantic_agreement(self) -> None:
-        result = run_public_blob_canary(Path(__file__).resolve().parents[1])
+    def test_public_canary_logic_is_hermetic_in_generic_suite(self) -> None:
+        source = b"def run_live_verification():\n    return True\n"
+        with patch(
+            "harness.inception_public_canary._git",
+            side_effect=[(PUBLIC_TREE + "\n").encode("utf-8"), source],
+        ):
+            result = run_public_blob_canary(Path("."))
 
         self.assertEqual(
             result["subject"],

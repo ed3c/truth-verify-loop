@@ -94,17 +94,27 @@ class DualAgentEvidenceContractTest(unittest.TestCase):
         self.assertEqual(schema["properties"]["schema"]["const"], BUNDLE_SCHEMA)
         self.assertEqual(schema["properties"]["required_families"]["const"], list(REQUIRED_FAMILIES))
 
-    def test_root_contract_is_deliberately_non_closing(self) -> None:
+    def test_root_contract_is_deliberately_non_closing_and_schema_compatible(self) -> None:
         bundle = fixed_bundle()
         summary = validate_bundle(bundle)
         self.assertEqual(summary["receipt_count"], len(REQUIRED_FAMILIES))
         self.assertEqual(summary["attempt_count"], 2)
         closure = compile_contract_closure(bundle)
+        closure_schema = json.loads((ROOT / "schemas/evidence-closure.v1.schema.json").read_text())
+        self.assertTrue(set(closure_schema["required"]).issubset(closure))
         self.assertEqual(closure["schema"], CLOSURE_SCHEMA)
         self.assertEqual(closure["state"], "UNVERIFIABLE")
         self.assertFalse(closure["closed"])
+        self.assertEqual(closure["as_of"], "2026-08-19T00:00:00Z")
+        self.assertIsInstance(closure["as_of"], str)
         self.assertEqual(closure["run"]["authority"], "EVIDENCE_ONLY")
         self.assertEqual(closure["run"]["release_state"], "NOT_PERFORMED")
+
+    def test_missing_observation_time_cannot_emit_schema_closure(self) -> None:
+        bundle = mutated_copy(fixed_bundle())
+        for receipt in bundle["receipts"]:
+            receipt["observed_at"] = None
+        self.assert_code("CLOSURE_AS_OF_UNAVAILABLE", lambda: validate_bundle(bundle))
 
     def test_mutable_producer_subject_is_refused(self) -> None:
         bundle = mutated_copy(fixed_bundle())

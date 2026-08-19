@@ -200,6 +200,7 @@ def validate_bundle(bundle: Mapping[str, Any]) -> dict[str, Any]:
     sequences: set[int] = set()
     families: set[str] = set()
     attempts: set[str] = set()
+    observed_times = []
     for receipt in receipts:
         validate_receipt(receipt, run_id=run_id, job_id=job_id, tenant_scope=tenant_scope)
         receipt_id = str(receipt["receipt_id"])
@@ -212,6 +213,9 @@ def validate_bundle(bundle: Mapping[str, Any]) -> dict[str, Any]:
         sequences.add(sequence)
         families.add(str(receipt["family"]))
         attempts.add(str(receipt["attempt_id"]))
+        observed_at = receipt.get("observed_at")
+        if observed_at is not None:
+            observed_times.append(parse_timestamp(observed_at, field_name="observed_at"))
 
     if sequences != set(range(len(receipts))):
         _refuse("DROPPED_OR_REORDERED_RECEIPT")
@@ -220,6 +224,8 @@ def validate_bundle(bundle: Mapping[str, Any]) -> dict[str, Any]:
         _refuse("MISSING_RECEIPT_FAMILY", ",".join(missing_families))
     if len(attempts) < 2:
         _refuse("ATTEMPT_DENOMINATOR_TOO_SMALL")
+    if not observed_times:
+        _refuse("CLOSURE_AS_OF_UNAVAILABLE")
 
     external = bundle.get("external_states")
     if not isinstance(external, Mapping):
@@ -235,6 +241,8 @@ def validate_bundle(bundle: Mapping[str, Any]) -> dict[str, Any]:
             _refuse("VERIFIER_SELF_PROMOTION", key)
 
     _scan_sensitive(bundle)
+    as_of_dt = max(observed_times)
+    as_of = as_of_dt.isoformat().replace("+00:00", "Z")
     return {
         "bundle_id": bundle_id,
         "claim_id": claim_id,
@@ -245,6 +253,7 @@ def validate_bundle(bundle: Mapping[str, Any]) -> dict[str, Any]:
         "attempt_count": len(attempts),
         "families": sorted(families),
         "bundle_digest": sha256_text(canonical_json(bundle)),
+        "as_of": as_of,
     }
 
 
@@ -261,7 +270,7 @@ def compile_contract_closure(bundle: Mapping[str, Any]) -> dict[str, Any]:
         "claim_id": summary["claim_id"],
         "state": "UNVERIFIABLE",
         "closed": False,
-        "as_of": None,
+        "as_of": summary["as_of"],
         "expires_at": None,
         "gates": {
             "DA0_SCHEMA_AND_SUBJECTS": True,

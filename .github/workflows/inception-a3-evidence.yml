@@ -1,4 +1,4 @@
-name: Inception A3 exact-evidence implementation
+name: Inception A3 public verification
 
 on:
   push:
@@ -9,7 +9,9 @@ on:
       - schemas/inception-code-evidence.v1.schema.json
       - schemas/inception-citation-claim.v1.schema.json
       - harness/inception_evidence.py
+      - harness/inception_public_canary.py
       - tests/test_inception_evidence.py
+      - tests/test_inception_public_canary.py
       - examples/inception-evidence/**
       - .github/workflows/inception-a3-evidence.yml
 
@@ -17,17 +19,17 @@ permissions:
   contents: read
 
 jobs:
-  deterministic-evidence:
+  public-evidence-canary:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Checkout exact workflow subject
+      - name: Checkout exact workflow subject with public history
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Validate exact A3 implementation manifest and lease
+      - name: Validate exact A3 verification manifest and lease
         shell: bash
         run: |
           set -euo pipefail
@@ -41,8 +43,8 @@ jobs:
           exact = {
               "schema_version": "inception-owner-preflight/v1",
               "atom_id": "INCEPTION-A3",
-              "stage": "OWNER_IMPLEMENTATION",
-              "state": "FIRST_IMPLEMENTATION_CANDIDATE",
+              "stage": "OWNER_PUBLIC_VERIFICATION",
+              "state": "PUBLIC_BLOB_SEMANTIC_CANARY_CANDIDATE",
               "repository": "ed3c/truth-verify-loop",
               "branch": "agent/inception-a3-exact-evidence-v2",
           }
@@ -55,11 +57,14 @@ jobs:
               "baseline_pull_request": 29,
               "baseline_verify_run": 32252254820,
           }
+          canary = manifest["public_canary_subject"]
+          assert canary["commit"] == base["commit"]
+          assert canary["tree"] == base["tree"]
+          assert canary["path"] == "harness/orchestrator.py"
+          assert canary["symbol"] == "run_live_verification"
           controller = manifest["controller_subject"]
           assert controller["commit"] == "6e0a916fd06dd8635d77c9a8c4d1b475185ea13e"
-          assert controller["tree"] == "c3851a6953d456d0342a9776eed28561c1af0ca1"
           assert controller["packet_digest"] == "sha256:8ed7553094f26df439f796e25ef83cdbe6916d0c50e8e659905ca12d3bd44ad6"
-          assert manifest["owner_issue"] == "ed3c/truth-verify-loop#23"
           for key in (
               "state_machine", "existing_mechanisms", "implementation_subjects",
               "writable_paths", "conditional_paths", "read_only_paths", "resource_leases",
@@ -71,7 +76,12 @@ jobs:
           assert not set(manifest["writable_paths"]) & set(manifest["read_only_paths"])
           assert manifest["cleanup_contract"]["required"] is True
           assert manifest["cleanup_contract"]["rollback_subject"] == base["commit"]
-          assert manifest["next_transition"] == "RUN_PUBLIC_REPOSITORY_BLOB_READBACK_AND_INDEPENDENT_SEMANTIC_CANARY"
+          assert manifest["next_transition"] == "RUN_PUBLIC_SOURCE_CAPTURE_WITH_EXTERNAL_INDEPENDENT_SEMANTIC_REVIEW"
+
+          observed_tree = subprocess.check_output(
+              ["git", "rev-parse", f"{base['commit']}^{{tree}}"], text=True
+          ).strip()
+          assert observed_tree == base["tree"], "PUBLIC_TREE_READBACK_MISMATCH"
 
           changed = subprocess.check_output(
               ["git", "diff", "--name-only", f"{base['commit']}...HEAD"], text=True
@@ -80,7 +90,9 @@ jobs:
               "schemas/inception-code-evidence.v1.schema.json",
               "schemas/inception-citation-claim.v1.schema.json",
               "harness/inception_evidence.py",
+              "harness/inception_public_canary.py",
               "tests/test_inception_evidence.py",
+              "tests/test_inception_public_canary.py",
               ".github/workflows/inception-a3-evidence.yml",
           }
           allowed_prefixes = (
@@ -99,7 +111,18 @@ jobs:
       - name: Execute exact-evidence disagreement controls
         run: |
           python3 -m unittest tests.test_inception_evidence -v
-          python3 -m py_compile harness/inception_evidence.py tests/test_inception_evidence.py
+
+      - name: Execute real public Git-blob and dual-method semantic canary
+        run: |
+          python3 -m unittest tests.test_inception_public_canary -v
+
+      - name: Compile exact Python subjects
+        run: |
+          python3 -m py_compile \
+            harness/inception_evidence.py \
+            harness/inception_public_canary.py \
+            tests/test_inception_evidence.py \
+            tests/test_inception_public_canary.py
           python3 -m json.tool schemas/inception-code-evidence.v1.schema.json >/dev/null
           python3 -m json.tool schemas/inception-citation-claim.v1.schema.json >/dev/null
 

@@ -8,7 +8,7 @@ import unittest
 
 from harness.lake import EvidenceLake
 from harness.model import Claim, ContractError, Evidence, sha256_bytes, sha256_text
-from harness.orchestrator import run_live_verification
+from harness.orchestrator import HarnessError, run_live_verification as _run_live_verification
 from harness.policy import RiskRequirement, SourcePolicy
 from harness.providers import ProviderReceipt, ProviderRun
 from harness.retriever import FetchedSource
@@ -25,6 +25,12 @@ from harness.semantic import (
 
 
 NOW = datetime(2026, 8, 12, 6, 30, tzinfo=timezone.utc)
+
+
+def run_live_verification(*args: object, **kwargs: object) -> dict[str, object]:
+    """Run semantic fixtures against one explicit, reproducible evaluation clock."""
+    kwargs.setdefault("evaluation_time", NOW)
+    return _run_live_verification(*args, **kwargs)  # type: ignore[arg-type,return-value]
 
 
 def claim(*, risk: str = "medium", temporality: str = "versioned") -> Claim:
@@ -1091,6 +1097,7 @@ class SemanticOrchestratorTests(unittest.TestCase):
                 stored[0].citation["semantic_verifier_families"],
             )
             self.assertEqual(result["semantic_dispatch"]["totals"]["attempts"], 1)
+            self.assertEqual(result["closure"]["run"]["evaluation_time"], "2026-08-12T06:30:00Z")
             self.assertEqual(lake.verify_integrity(), [])
 
     def test_semantic_attempt_streams_are_preserved_in_cold_memory(self) -> None:
@@ -1197,6 +1204,42 @@ class SemanticOrchestratorTests(unittest.TestCase):
 
             self.assertEqual(result["closure"]["state"], "REFUTED")
             self.assertTrue(result["closure"]["closed"])
+
+    def test_later_explicit_clock_still_marks_fixture_evidence_stale(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            result = _run_live_verification(
+                claim(temporality="dynamic"),
+                lake=EvidenceLake(Path(directory) / "lake"),
+                policy=SourcePolicy(
+                    domain_classes={"docs.example.invalid": "official_release"}
+                ),
+                provider=FixtureSearchProvider(),
+                retriever=FixtureRetriever(),
+                semantic_dispatcher=SemanticDispatcher([EntailingVerifier()]),
+                cwd=Path(directory),
+                model_knowledge_cutoff=None,
+                evaluation_time=NOW + timedelta(days=2),
+            )
+
+        self.assertEqual(result["closure"]["state"], "STALE")
+        self.assertFalse(result["closure"]["closed"])
+
+    def test_naive_evaluation_clock_fails_before_provider_execution(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(HarnessError, "timezone-aware"):
+                _run_live_verification(
+                    claim(temporality="dynamic"),
+                    lake=EvidenceLake(Path(directory) / "lake"),
+                    policy=SourcePolicy(
+                        domain_classes={"docs.example.invalid": "official_release"}
+                    ),
+                    provider=FixtureSearchProvider(),
+                    retriever=FixtureRetriever(),
+                    semantic_dispatcher=SemanticDispatcher([EntailingVerifier()]),
+                    cwd=Path(directory),
+                    model_knowledge_cutoff=None,
+                    evaluation_time=NOW.replace(tzinfo=None),
+                )
 
 
 class SemanticAdversarialFixtureTests(unittest.TestCase):

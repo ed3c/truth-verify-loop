@@ -108,13 +108,34 @@ jobs:
           print(f"PASS atom=INCEPTION-A3 changed={len(changed)} mutations={len(manifest['mutation_controls'])}")
           PY
 
-      - name: Execute exact-evidence disagreement controls
+      - name: Execute hermetic exact-evidence and canary logic controls
         run: |
           python3 -m unittest tests.test_inception_evidence -v
-
-      - name: Execute real public Git-blob and dual-method semantic canary
-        run: |
           python3 -m unittest tests.test_inception_public_canary -v
+
+      - name: Execute exact public Git-history readback canary
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from harness.inception_public_canary import (
+              PUBLIC_COMMIT,
+              PUBLIC_PATH,
+              PUBLIC_REPOSITORY,
+              PUBLIC_TREE,
+              run_public_blob_canary,
+          )
+
+          result = run_public_blob_canary(Path.cwd())
+          assert result["subject"]["repository"] == PUBLIC_REPOSITORY
+          assert result["subject"]["commit"] == PUBLIC_COMMIT
+          assert result["subject"]["tree"] == PUBLIC_TREE
+          assert result["subject"]["path"] == PUBLIC_PATH
+          assert result["code"]["physical_state"] == "PASS"
+          assert result["citation"]["lexical_state"] == "PASS"
+          assert result["citation"]["semantic_state"] == "SUPPORTED"
+          assert result["evidence_ceiling"] == "PUBLIC_DETERMINISTIC_FIXTURE_ONLY"
+          print("PASS inception-a3 exact public Git blob readback + dual-method fixture")
+          PY
 
       - name: Compile exact Python subjects
         run: |

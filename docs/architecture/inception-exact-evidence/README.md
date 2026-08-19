@@ -1,10 +1,10 @@
 # Inception A3 — exact code, source and citation evidence
 
-Status: **FIRST PUBLIC IMPLEMENTATION CANDIDATE**  
+Status: **PUBLIC BLOB + DUAL-METHOD SEMANTIC CANARY CANDIDATE**  
 Upstream profile issue: `ed3c/enterprise_agent_system#15`  
 Owner issue: `ed3c/truth-verify-loop#23`
 
-This leaf is a true child of the green baseline convergence subject `c01254547672a9ad03345c9013b20d3d1049e274`. It implements a bounded, read-only exact-evidence validator for commit-pinned code locations and citation claims. Physical/lexical readback remains separate from independent semantic interpretation; the validator cannot become the proposer or a canonical task/effect/Human writer.
+This leaf is a true child of the green baseline convergence subject `c01254547672a9ad03345c9013b20d3d1049e274`. It implements a bounded, read-only exact-evidence validator and now exercises it against one real public Git object. Physical/lexical readback remains separate from semantic interpretation; neither the validator nor the canary can become the proposer or a canonical task/effect/Human writer.
 
 ## Exact lineage
 
@@ -26,35 +26,60 @@ schemas/inception-code-evidence.v1.schema.json
 schemas/inception-citation-claim.v1.schema.json
 harness/inception_evidence.py
 tests/test_inception_evidence.py
+harness/inception_public_canary.py
+tests/test_inception_public_canary.py
 ```
 
-The code-evidence contract binds:
+The code-evidence contract binds repository/commit/tree, a repository-relative symlink-confined path, a 1-based line range, exact snippet SHA-256, symbol and parser coverage. `python-ast` independently parses the file; `text-only` cannot claim symbol coverage and `unavailable` cannot claim parser coverage.
+
+The citation contract keeps source digest, locator, quote digest, lexical state and semantic state separate. A lexical `PASS` with `semantic_state = NOT_EXERCISED` remains lexical evidence only.
+
+## Public Git-object canary
+
+The verification canary reads this immutable public subject through the local Git object database created by an exact public checkout:
 
 ```text
-repository + exact 40-hex commit + exact 40-hex tree
-repository-relative, symlink-confined path
-1-based line range
-exact snippet SHA-256
-optional symbol
-parser identity + declared coverage
-physical state + claims_not_proven
+repository  ed3c/truth-verify-loop
+commit      c01254547672a9ad03345c9013b20d3d1049e274
+tree        577213165a091aee389e9c7028570eb8cf6da1c7
+path        harness/orchestrator.py
+symbol      run_live_verification
 ```
 
-For `python-ast`, the validator independently parses the file and checks the named function/class symbol. `text-only` cannot claim symbol coverage. `unavailable` cannot claim parser coverage.
-
-The citation contract binds:
+The canary performs:
 
 ```text
-source digest
-exact locator
-quote + quote digest
-lexical state
-semantic state
-independent semantic receipt when exercised
-claims_not_proven
+git rev-parse <commit>^{tree}
+        ↓ exact tree equality
+git show <commit>:harness/orchestrator.py
+        ↓ exact public blob bytes
+isolated temporary materialization
+        ↓
+line/snippet digest + Python AST symbol validator
+        ↓
+lexical PASS
 ```
 
-A lexical `PASS` with `semantic_state = NOT_EXERCISED` remains lexical evidence only. `SUPPORTED` / `REFUTED` / `CONFLICTED` / `ABSTAIN` require a separate semantic receipt digest; this shape check does not prove that the independent semantic run actually occurred.
+It never mutates the source repository and deletes its temporary materialization when the canary returns.
+
+## Dual-method semantic fixture
+
+The canary then asks a deliberately narrow fixture statement: whether `run_live_verification` is defined in the exact public path. Two deterministic mechanisms evaluate the same immutable bytes:
+
+```text
+regex-symbol-reviewer/v1
+python-ast-symbol-reviewer/v1
+```
+
+Their reducer is categorical:
+
+```text
+both support → SUPPORTED
+one disagrees → CONFLICTED
+both absent → ABSTAIN
+```
+
+This is **not** independent external model/provider evidence. It only proves that the A3 pipeline preserves separate reviewer identities, a separate semantic receipt, and disagreement/abstention states. It receives no arbitrary business-claim closure credit.
 
 ## State Machine
 
@@ -70,24 +95,6 @@ EXACT_SUBJECT_BOUND
 → REPAIR_OR_HUMAN_REVIEW
 ```
 
-The current implementation covers the deterministic physical/lexical half through `SYMBOL_SNIPPET_OR_QUOTE_VERIFIED`. Independent semantic dispatch and business-claim closure remain separate existing harness lanes.
-
-## Deterministic disagreement controls
-
-The public tests refuse:
-
-```text
-mutable commit subjects
-path traversal
-symlink escape
-out-of-range lines
-snippet digest mismatch
-missing AST symbol
-false parser coverage
-quote digest mismatch
-semantic promotion without an independent receipt shape
-```
-
 ## Writer lease
 
 ```text
@@ -95,28 +102,32 @@ docs/architecture/inception-exact-evidence/**
 schemas/inception-code-evidence.v1.schema.json
 schemas/inception-citation-claim.v1.schema.json
 harness/inception_evidence.py
+harness/inception_public_canary.py
 tests/test_inception_evidence.py
+tests/test_inception_public_canary.py
 examples/inception-evidence/**
 .github/workflows/inception-a3-evidence.yml
 ```
 
 Existing closure, retriever, lake and semantic modules remain read-only. Private code/source bytes and service-account paths never enter portable fixtures or receipts.
 
-## Next transition
-
-`RUN_PUBLIC_REPOSITORY_BLOB_READBACK_AND_INDEPENDENT_SEMANTIC_CANARY`
-
-The next atom must bind a real public repository commit/tree/blob and independently read it back, then run a separate semantic canary without letting that reviewer mutate the evidence source.
-
 ## Evidence ceiling
 
 ```text
-code/citation schemas          DETERMINISTIC_CANDIDATE
-physical/lexical validator     DETERMINISTIC_CANDIDATE
-mutation controls              DETERMINISTIC_CANDIDATE
-real public blob readback      NOT_EXERCISED
-private evidence               NOT_EXERCISED
-independent semantic canary    NOT_EXERCISED
-business claim closure         ABSENT
-Human admission / release      NOT_PERFORMED
+code/citation schemas             DETERMINISTIC_PASS candidate
+physical/lexical validator        DETERMINISTIC_PASS candidate
+real public Git blob readback     PUBLIC_VERIFICATION_CANDIDATE
+dual-method fixture semantic      PUBLIC_VERIFICATION_CANDIDATE
+external independent semantic     NOT_EXERCISED
+private evidence                  NOT_EXERCISED
+arbitrary business claim closure  ABSENT
+Human admission / release         NOT_PERFORMED
 ```
+
+Machine state: [`preflight.json`](preflight.json).
+
+## Next transition
+
+`RUN_PUBLIC_SOURCE_CAPTURE_WITH_EXTERNAL_INDEPENDENT_SEMANTIC_REVIEW`
+
+The next promotion requires an external independent semantic reviewer or scoped Human review over a public source subject. The deterministic regex/AST fixture may not proxy that lane.

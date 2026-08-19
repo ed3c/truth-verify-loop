@@ -31,6 +31,10 @@ SECRET_PATTERNS = {
 }
 EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})\b")
 MARKDOWN_LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)\s]+)(?:\s+['\"][^)]*['\"])?\)")
+LICENSE_MARKERS = {
+    "MIT": "MIT License",
+    "Apache-2.0": "Apache License\n                           Version 2.0, January 2004",
+}
 
 
 def _iter_paths(root: Path):
@@ -38,6 +42,13 @@ def _iter_paths(root: Path):
         if any(part in IGNORED_PARTS for part in path.relative_to(root).parts):
             continue
         yield path
+
+
+def _recognized_license(text: str) -> str | None:
+    for identifier, marker in LICENSE_MARKERS.items():
+        if marker in text:
+            return identifier
+    return None
 
 
 def check(root: Path) -> list[str]:
@@ -48,10 +59,10 @@ def check(root: Path) -> list[str]:
         if path.is_symlink() or not path.is_file():
             failures.append(f"required regular file missing: {name}")
     license_path = root / "LICENSE"
-    if license_path.is_file() and "MIT License" not in license_path.read_text(
-        encoding="utf-8", errors="replace"
-    ):
-        failures.append("LICENSE is not recognized as MIT")
+    if license_path.is_file():
+        license_text = license_path.read_text(encoding="utf-8", errors="replace")
+        if _recognized_license(license_text) is None:
+            failures.append("LICENSE is not recognized as MIT or Apache-2.0")
 
     for path in _iter_paths(root):
         rel = path.relative_to(root).as_posix()

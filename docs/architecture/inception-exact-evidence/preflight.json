@@ -1,8 +1,8 @@
 {
   "schema_version": "inception-owner-preflight/v1",
   "atom_id": "INCEPTION-A3",
-  "stage": "OWNER_IMPLEMENTATION",
-  "state": "FIRST_IMPLEMENTATION_CANDIDATE",
+  "stage": "OWNER_PUBLIC_VERIFICATION",
+  "state": "PUBLIC_BLOB_SEMANTIC_CANARY_CANDIDATE",
   "repository": "ed3c/truth-verify-loop",
   "branch": "agent/inception-a3-exact-evidence-v2",
   "base_subject": {
@@ -18,6 +18,13 @@
     "tree": "c3851a6953d456d0342a9776eed28561c1af0ca1",
     "packet_digest": "sha256:8ed7553094f26df439f796e25ef83cdbe6916d0c50e8e659905ca12d3bd44ad6",
     "bundle_digest": "sha256:dc4473b3195a738e55eb49c43661b6e1f4ea7f95c66749454776f2003b18ebc3"
+  },
+  "public_canary_subject": {
+    "repository": "ed3c/truth-verify-loop",
+    "commit": "c01254547672a9ad03345c9013b20d3d1049e274",
+    "tree": "577213165a091aee389e9c7028570eb8cf6da1c7",
+    "path": "harness/orchestrator.py",
+    "symbol": "run_live_verification"
   },
   "owner_issue": "ed3c/truth-verify-loop#23",
   "upstream_issue": "ed3c/enterprise_agent_system#15",
@@ -49,14 +56,18 @@
     "schemas/inception-code-evidence.v1.schema.json",
     "schemas/inception-citation-claim.v1.schema.json",
     "harness/inception_evidence.py",
-    "tests/test_inception_evidence.py"
+    "tests/test_inception_evidence.py",
+    "harness/inception_public_canary.py",
+    "tests/test_inception_public_canary.py"
   ],
   "writable_paths": [
     "docs/architecture/inception-exact-evidence/**",
     "schemas/inception-code-evidence.v1.schema.json",
     "schemas/inception-citation-claim.v1.schema.json",
     "harness/inception_evidence.py",
+    "harness/inception_public_canary.py",
     "tests/test_inception_evidence.py",
+    "tests/test_inception_public_canary.py",
     "examples/inception-evidence/**",
     ".github/workflows/inception-a3-evidence.yml"
   ],
@@ -81,21 +92,24 @@
   ],
   "resource_leases": [
     "fixture-repository:inception-code-evidence",
-    "evidence-lake:inception-a3-fixture",
-    "parser-session:inception-a3"
+    "git-object-readback:truth-verify-loop-public-base",
+    "parser-session:inception-a3",
+    "semantic-fixture-reviewers:regex-plus-python-ast"
   ],
   "required_evidence_lanes": [
+    "PUBLIC_GIT_BLOB_READBACK",
     "DETERMINISTIC_PHYSICAL",
     "LEXICAL_CAPTURE",
-    "INDEPENDENT_SEMANTIC",
+    "DUAL_METHOD_SEMANTIC_FIXTURE",
     "PRIVATE_SOURCE_SEPARATE"
   ],
   "positive_controls": [
-    "repository commit tree and normalized path bind one exact source subject",
-    "line range snippet digest symbol and parser identity are read back independently",
-    "source quote digest and locator match captured bytes",
-    "lexical or physical PASS remains separate from semantic entailment",
-    "failed timeout discarded abstained and conflicting attempts remain visible"
+    "repository commit and tree are read back from a real public Git object",
+    "public blob bytes are materialized into an isolated temporary root before validation",
+    "line range snippet digest symbol and parser identity are independently checked",
+    "regex and Python AST fixture reviewers use distinct mechanisms",
+    "reviewer disagreement produces CONFLICTED rather than support",
+    "lexical or physical PASS remains separate from semantic state"
   ],
   "mutation_controls": [
     "mutable or stale repository subject",
@@ -106,6 +120,7 @@
     "parser coverage claimed where unavailable",
     "quote or locator mismatch",
     "lexical match promoted to semantic support without separate receipt",
+    "one fixture reviewer disagrees but aggregate remains SUPPORTED",
     "proposer and verifier share one mutable path",
     "model Judge self-promotes truth or zero hallucination",
     "private evidence secret or service-account path enters portable receipt"
@@ -118,6 +133,7 @@
   "forbidden_actions": [
     "mutate source repositories",
     "persist private source bytes in portable fixtures",
+    "represent deterministic fixture reviewers as external independent model evidence",
     "replace categorical closure with one score",
     "self-promote semantic support",
     "write canonical task effect Human or release state",
@@ -127,10 +143,11 @@
     "rollback"
   ],
   "claims_not_proven": [
-    "No real public or private repository blob readback has executed for the new adapter.",
-    "No private or independent semantic evidence run has executed.",
-    "No business claim is closed by the deterministic fixture.",
-    "No Human admission, merge, release or rollback has occurred."
+    "The public canary covers one fixed repository symbol, not arbitrary business claims.",
+    "The two semantic fixture reviewers are deterministic methods, not independent external providers.",
+    "No private evidence has been accessed.",
+    "No external semantic provider or Human reviewer has executed.",
+    "No business claim, Human admission, merge, release or rollback has occurred."
   ],
-  "next_transition": "RUN_PUBLIC_REPOSITORY_BLOB_READBACK_AND_INDEPENDENT_SEMANTIC_CANARY"
+  "next_transition": "RUN_PUBLIC_SOURCE_CAPTURE_WITH_EXTERNAL_INDEPENDENT_SEMANTIC_REVIEW"
 }

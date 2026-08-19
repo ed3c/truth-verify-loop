@@ -119,7 +119,7 @@ def validate_producer(subject: Mapping[str, Any]) -> None:
     if not H40.fullmatch(commit) or not H40.fullmatch(tree):
         _refuse("MUTABLE_PRODUCER_SUBJECT")
     _safe_id(subject.get("schema"), code="PRODUCER_SUBJECT_INVALID")
-    _safe_id(subject.get("version"), code="PRODUCER_SUBJECT_INVALID")
+    _text(subject.get("version"), code="PRODUCER_SUBJECT_INVALID")
     _h64(subject.get("digest"), code="PRODUCER_SUBJECT_INVALID")
 
 

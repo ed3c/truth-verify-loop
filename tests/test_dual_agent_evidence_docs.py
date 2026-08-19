@@ -174,7 +174,7 @@ def verify_docs(index: dict, readme: str, agents: str, preflight: dict) -> None:
         "UNVERIFIABLE",
         "COMPLETE_DETERMINISTIC_DUAL_AGENT_TRUTH_MATRIX_ONLY",
         "canonical_write=NONE",
-        "physical local→cloud→local",
+        "real local→cloud→local physical run",
         "Screenshot presence is not semantic proof",
         "Backend completion is not user-visible success",
     ]
@@ -192,7 +192,7 @@ def verify_docs(index: dict, readme: str, agents: str, preflight: dict) -> None:
         "Technical verifier PASS cannot emit SUPPORTED/REFUTED by itself.",
         "Shadow stop conditions",
         "DA-TV-D / issue #37",
-        "Actual byte-readback",
+        "DA-TV-ART must hash independently supplied captured/read-back bytes.",
     ]
     for token in agents_tokens:
         if token not in agents:

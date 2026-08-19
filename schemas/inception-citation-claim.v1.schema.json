@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/truth-verify-loop/inception-citation-claim.v1.schema.json",
+  "title": "Inception Citation Claim",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "claim_id", "source_digest", "locator", "quote", "quote_digest", "lexical_state", "semantic_state", "semantic_receipt", "claims_not_proven"],
+  "properties": {
+    "schema_version": {"const": "truth-verify-loop/inception-citation-claim/v1"},
+    "claim_id": {"type": "string", "minLength": 1},
+    "source_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "locator": {"type": "string", "minLength": 1},
+    "quote": {"type": "string", "minLength": 1},
+    "quote_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "lexical_state": {"enum": ["CANDIDATE", "PASS", "FAIL"]},
+    "semantic_state": {"enum": ["NOT_EXERCISED", "SUPPORTED", "REFUTED", "CONFLICTED", "ABSTAIN"]},
+    "semantic_receipt": {"type": ["string", "null"]},
+    "claims_not_proven": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  }
+}

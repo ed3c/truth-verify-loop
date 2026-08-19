@@ -95,6 +95,15 @@ def verify_cross_family_bindings(bundle: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _verify_finding_digest(finding: Mapping[str, Any], family: str) -> None:
+    claimed = _h64(finding.get("finding_digest"), "VERIFIER_FINDING_DIGEST_INVALID")
+    body = dict(finding)
+    body.pop("finding_digest", None)
+    actual = sha256_text(canonical_json(body))
+    if actual != claimed:
+        _refuse("VERIFIER_FINDING_DIGEST_MISMATCH", family)
+
+
 def converge_findings(bundle: Mapping[str, Any], findings: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     summary = validate_bundle(bundle)
     binding = verify_cross_family_bindings(bundle)
@@ -118,6 +127,7 @@ def converge_findings(bundle: Mapping[str, Any], findings: Sequence[Mapping[str,
 
     for family in REQUIRED_VERIFIERS:
         finding = by_family[family]
+        _verify_finding_digest(finding, family)
         if finding.get("gate") is not True:
             _refuse("VERIFIER_FAMILY_FAILED", family)
         if finding.get("bundle_digest") != summary["bundle_digest"]:
@@ -126,7 +136,6 @@ def converge_findings(bundle: Mapping[str, Any], findings: Sequence[Mapping[str,
             _refuse("VERIFIER_AUTHORITY_WIDENING", family)
         if finding.get("evidence_ceiling") != EXPECTED_CEILINGS[family]:
             _refuse("VERIFIER_EVIDENCE_CEILING_WIDENING", family)
-        _h64(finding.get("finding_digest"), "VERIFIER_FINDING_DIGEST_INVALID")
 
     if by_family["DA-TV-DLV"].get("task_state") != "NOT_EXERCISED" or by_family["DA-TV-DLV"].get("release_state") != "NOT_PERFORMED":
         _refuse("DELIVERY_VERIFIER_SELF_PROMOTION")

@@ -1,0 +1,38 @@
+name: Dual-Agent source artifact verification
+
+on:
+  pull_request:
+    paths:
+      - "harness/dual_agent_evidence/artifact.py"
+      - "tests/test_dual_agent_evidence_artifact.py"
+      - ".github/workflows/dual-agent-evidence-artifact.yml"
+      - "harness/dual_agent_evidence/contract.py"
+      - "tests/test_dual_agent_evidence_contract.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-artifact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.14"]
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Re-run parent evidence contract
+        run: python -m unittest tests.test_dual_agent_evidence_contract
+      - name: Run source artifact controls
+        run: python -m unittest tests.test_dual_agent_evidence_artifact
+      - name: Run repository verification
+        run: bash verify.sh

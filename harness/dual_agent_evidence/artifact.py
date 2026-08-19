@@ -1,7 +1,8 @@
 """Independent source/artifact byte-readback verification.
 
 Capture establishes provenance and byte identity only. It never upgrades a source or
-screenshot into semantic support by itself.
+screenshot into semantic support by itself. Manifest digests are not trusted as
+readback: callers must supply the bytes that were independently captured/read back.
 """
 
 from __future__ import annotations
@@ -9,7 +10,7 @@ from __future__ import annotations
 import re
 from typing import Any, Mapping
 
-from harness.model import canonical_json, sha256_text
+from harness.model import canonical_json, sha256_bytes, sha256_text
 
 from .contract import DualAgentEvidenceError, validate_bundle
 
@@ -35,8 +36,22 @@ def _payload(receipt: Mapping[str, Any]) -> Mapping[str, Any]:
     return payload
 
 
-def verify_source_artifacts(bundle: Mapping[str, Any]) -> dict[str, Any]:
+def source_digest(subject: Mapping[str, Any]) -> str:
+    return sha256_text(canonical_json(dict(subject)))
+
+
+def verify_source_artifacts(
+    bundle: Mapping[str, Any],
+    *,
+    source_bytes: bytes,
+    artifact_bytes: Mapping[str, bytes],
+) -> dict[str, Any]:
     summary = validate_bundle(bundle)
+    if not isinstance(source_bytes, bytes) or not source_bytes:
+        _refuse("SOURCE_BYTES_MISSING")
+    if not isinstance(artifact_bytes, Mapping):
+        _refuse("ARTIFACT_READBACK_BYTES_INVALID")
+
     sources = [item for item in bundle["receipts"] if item["family"] == "SOURCE"]
     manifests = [item for item in bundle["receipts"] if item["family"] == "ARTIFACT"]
     if len(sources) != 1:
@@ -62,14 +77,15 @@ def verify_source_artifacts(bundle: Mapping[str, Any]) -> dict[str, Any]:
     capture_digest = _h64(source_payload.get("captured_bytes_digest"), "SOURCE_CAPTURE_DIGEST_INVALID")
     if source_payload.get("bytes_present") is not True:
         _refuse("SOURCE_BYTES_MISSING")
+    if sha256_bytes(source_bytes) != capture_digest:
+        _refuse("SOURCE_BYTE_READBACK_MISMATCH")
     if source_payload.get("capture_scope") not in FULL_CAPTURE_SCOPES:
         _refuse("SOURCE_CAPTURE_SCOPE_INCOMPLETE")
     if source_payload.get("semantic_support_claimed") is True:
         _refuse("SOURCE_CAPTURE_AS_SEMANTIC_PROOF")
     if source_payload.get("temporary_path") is not None:
         _refuse("TEMPORARY_PATH_AS_DURABLE_EVIDENCE")
-    expected_source_digest = sha256_text(canonical_json(dict(subject)))
-    if subject_digest != expected_source_digest:
+    if subject_digest != source_digest(subject):
         _refuse("SOURCE_SUBJECT_DIGEST_MISMATCH")
 
     artifact_payload = _payload(manifests[0])
@@ -91,13 +107,19 @@ def verify_source_artifacts(bundle: Mapping[str, Any]) -> dict[str, Any]:
         readback = _h64(artifact.get("readback_digest"), "ARTIFACT_READBACK_DIGEST_INVALID")
         if artifact.get("bytes_present") is not True:
             _refuse("ARTIFACT_BYTES_MISSING", name)
-        if declared != readback:
+        raw = artifact_bytes.get(name)
+        if not isinstance(raw, bytes):
+            _refuse("ARTIFACT_BYTES_MISSING", name)
+        actual_digest = sha256_bytes(raw)
+        if declared != readback or readback != actual_digest:
             _refuse("ARTIFACT_READBACK_DISAGREEMENT", name)
         size = artifact.get("bytes")
         if not isinstance(size, int) or isinstance(size, bool) or size < 0:
             _refuse("ARTIFACT_SIZE_INVALID", name)
+        if size != len(raw):
+            _refuse("ARTIFACT_SIZE_READBACK_MISMATCH", name)
         durable_ref = artifact.get("durable_ref")
-        if durable_ref != f"sha256:{readback}":
+        if durable_ref != f"sha256:{actual_digest}":
             _refuse("ARTIFACT_DURABLE_REF_MISMATCH", name)
         if artifact.get("temporary_path") is not None:
             _refuse("TEMPORARY_PATH_AS_DURABLE_EVIDENCE", name)
@@ -105,7 +127,11 @@ def verify_source_artifacts(bundle: Mapping[str, Any]) -> dict[str, Any]:
             if artifact.get("media_type") in {"image/png", "image/jpeg", "image/webp"}:
                 _refuse("SCREENSHOT_AS_SEMANTIC_PROOF", name)
             _refuse("ARTIFACT_AS_SEMANTIC_PROOF", name)
-        verified.append({"logical_name": name, "digest": readback, "bytes": size})
+        verified.append({"logical_name": name, "digest": actual_digest, "bytes": size})
+
+    extra_readbacks = set(artifact_bytes) - logical_names
+    if extra_readbacks:
+        _refuse("UNDECLARED_ARTIFACT_BYTES", ",".join(sorted(extra_readbacks)))
 
     manifest_source = _h64(artifact_payload.get("source_subject_digest"), "ARTIFACT_SOURCE_BINDING_INVALID")
     if manifest_source != source_digest(subject):
@@ -127,7 +153,3 @@ def verify_source_artifacts(bundle: Mapping[str, Any]) -> dict[str, Any]:
     }
     finding["finding_digest"] = sha256_text(canonical_json(finding))
     return finding
-
-
-def source_digest(subject: Mapping[str, Any]) -> str:
-    return sha256_text(canonical_json(dict(subject)))

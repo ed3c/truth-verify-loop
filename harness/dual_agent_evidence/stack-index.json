@@ -90,6 +90,13 @@
       "head_before_repair": "fe07768c2354813ca2ee3f492b229b7de94869db",
       "finding": "SHADOW_SCHEMA_REVIEW_CLOSURE_AS_OF_WAS_NULL",
       "resolution_head": "944af8fc0230a9aae31ad47d6cb6051e10521bc7"
+    },
+    {
+      "pr": 45,
+      "head": "b6a9bcfd08bc59b5151cd4507313a1882dcec7fa",
+      "run": 32298782739,
+      "finding": "AGENT_ROUTE_INCOMPLETE_NORMATIVE_TOKEN",
+      "resolution_head": "60c06a62af6a15149da2b3d49998a18d44e87f70"
     }
   ],
   "authority": {

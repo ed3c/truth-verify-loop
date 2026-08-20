@@ -18,7 +18,8 @@ EXPECTED_NODES = {
         "tree": "1bb3589e20c157136a2597a51db15599226f4c6a",
         "targeted_run": 32297448276,
         "repository_verify_run": 32297448445,
-        "state": "DETERMINISTIC_PASS",
+        "state": "MERGED_CLOSED_DETERMINISTIC",
+        "integration_merge": "a1b09a70bf6c6ec75c7a4a2b5328d67231ac929b",
     },
     "DA-TV-DLV": {
         "issue": 32,
@@ -27,7 +28,7 @@ EXPECTED_NODES = {
         "tree": "120f9e496923c428cb8c3ccd53009b2e0c92175a",
         "targeted_run": 32297590276,
         "repository_verify_run": 32297590291,
-        "state": "DETERMINISTIC_PASS",
+        "state": "IN_MAIN_VIA_CONVERGENCE_44",
     },
     "DA-TV-EF": {
         "issue": 33,
@@ -36,7 +37,7 @@ EXPECTED_NODES = {
         "tree": "01c380ff49a3274cecda8c233db676f45b73c777",
         "targeted_run": 32297636307,
         "repository_verify_run": 32297636445,
-        "state": "DETERMINISTIC_PASS",
+        "state": "IN_MAIN_VIA_CONVERGENCE_44",
     },
     "DA-TV-ART": {
         "issue": 34,
@@ -45,7 +46,7 @@ EXPECTED_NODES = {
         "tree": "cd70a2875dc022a3af5d07512cf15b3345444b11",
         "targeted_run": 32297675577,
         "repository_verify_run": 32297675560,
-        "state": "DETERMINISTIC_PASS",
+        "state": "IN_MAIN_VIA_CONVERGENCE_44",
     },
     "DA-TV-USER": {
         "issue": 35,
@@ -54,7 +55,7 @@ EXPECTED_NODES = {
         "tree": "6ff6a9df8d69a5dd35c42eddbb053bbc2be5be4a",
         "targeted_run": 32297728757,
         "repository_verify_run": 32297728719,
-        "state": "DETERMINISTIC_PASS",
+        "state": "IN_MAIN_VIA_CONVERGENCE_44",
     },
     "DA-TV-E": {
         "issue": 36,
@@ -63,8 +64,29 @@ EXPECTED_NODES = {
         "tree": "e8f5194b91814d26e3c87cc194cf8789a87db4b5",
         "targeted_run": 32298186985,
         "repository_verify_run": 32298186805,
-        "state": "COMPLETE_DETERMINISTIC_MATRIX_PASS",
+        "state": "MERGED_COMPLETE_DETERMINISTIC_MATRIX",
+        "integration_merge": "280873959db52f241beea53becd4e5d0e339426d",
     },
+    "DA-TV-D": {
+        "issue": 37,
+        "pr": 45,
+        "head": "401a105d7768640dbdda8672f358407f7eb648e0",
+        "tree": "507a4bda6e0df459fca1d71c838c9386cf3aff79",
+        "targeted_run": 32320671872,
+        "repository_verify_run": 32320671837,
+        "state": "MERGED_CLOSED_DETERMINISTIC_TRACE",
+        "integration_merge": "5a9223b4525966550921c2727b144f119ff82c9a",
+    },
+}
+
+EXPECTED_INTEGRATION = {
+    "repository": "ed3c/truth-verify-loop",
+    "branch": "main",
+    "commit": "123bee539157331cb976c2926f4359352430bfd1",
+    "tree": "507a4bda6e0df459fca1d71c838c9386cf3aff79",
+    "merge_pr": 28,
+    "merge_chain": [45, 44, 39, 29, 28],
+    "state": "DETERMINISTIC_IMPLEMENTATION_IN_MAIN",
 }
 
 EXPECTED_CEILING = "COMPLETE_DETERMINISTIC_DUAL_AGENT_TRUTH_MATRIX_ONLY"
@@ -83,8 +105,10 @@ def verify_docs(index: dict, readme: str, agents: str, preflight: dict) -> None:
         _refuse("STACK_INDEX_SCHEMA_DRIFT")
     if index.get("parent_issue") != 22 or index.get("docs_issue") != 37 or index.get("docs_pr") != 45:
         _refuse("DOCS_ROUTE_DRIFT")
-    if index.get("docs_subject_state") != "CANDIDATE_SUBJECT_PENDING":
-        _refuse("DOCS_SELF_PROMOTION")
+    if index.get("docs_subject_state") != "IMPLEMENTATION_MERGED_TO_MAIN":
+        _refuse("DOCS_INTEGRATION_STATE_DRIFT")
+    if index.get("integration_main") != EXPECTED_INTEGRATION:
+        _refuse("MAIN_INTEGRATION_SUBJECT_DRIFT")
 
     baseline = index.get("green_baseline", {})
     if baseline != {
@@ -111,7 +135,12 @@ def verify_docs(index: dict, readme: str, agents: str, preflight: dict) -> None:
     if not isinstance(failures, list):
         _refuse("FAILURE_HISTORY_ERASED")
     failure_pairs = {(item.get("pr"), item.get("run")) for item in failures if isinstance(item, dict)}
-    if not {(38, 32295680345), (38, 32295801844)}.issubset(failure_pairs):
+    required_pairs = {
+        (38, 32295680345),
+        (38, 32295801844),
+        (45, 32298782739),
+    }
+    if not required_pairs.issubset(failure_pairs):
         _refuse("FAILURE_HISTORY_ERASED")
     as_of_finding = any(
         item.get("finding") == "SHADOW_SCHEMA_REVIEW_CLOSURE_AS_OF_WAS_NULL"
@@ -122,12 +151,26 @@ def verify_docs(index: dict, readme: str, agents: str, preflight: dict) -> None:
     if not as_of_finding:
         _refuse("FAILURE_HISTORY_ERASED", "as_of")
 
+    closure_actions = index.get("closure_actions", {})
+    if closure_actions != {
+        "issues_ready_to_close_completed": [25, 27, 31, 32, 33, 34, 35, 36, 37],
+        "prs_merged": [28, 29, 39, 44, 45],
+        "prs_ready_to_close_completed_via_convergence": [40, 41, 42, 43],
+        "prs_ready_to_close_superseded": [24, 26, 38],
+        "issues_keep_open": [22],
+    }:
+        _refuse("CLOSURE_ACTION_DRIFT")
+
     authority = index.get("authority", {})
     if authority.get("truth_vocabulary_owner") != "existing-truth-verify-loop-closure-plane":
         _refuse("TRUTH_VOCABULARY_OWNER_DRIFT")
     if authority.get("technical_matrix_canonical_write") != "NONE":
         _refuse("TECHNICAL_WRITER_WIDENING")
-    if authority.get("execution_authority") != "EXTERNAL" or authority.get("workflow_authority") != "EXTERNAL" or authority.get("effect_authority") != "EXTERNAL":
+    if (
+        authority.get("execution_authority") != "EXTERNAL"
+        or authority.get("workflow_authority") != "EXTERNAL"
+        or authority.get("effect_authority") != "EXTERNAL"
+    ):
         _refuse("EXECUTION_AUTHORITY_DRIFT")
     if authority.get("semantic_claim_direction_owner") != "existing-truth-verify-loop-semantic-plane":
         _refuse("SEMANTIC_OWNER_DRIFT")
@@ -137,7 +180,6 @@ def verify_docs(index: dict, readme: str, agents: str, preflight: dict) -> None:
     if index.get("evidence_ceiling") != EXPECTED_CEILING:
         _refuse("EVIDENCE_CEILING_DRIFT")
 
-    live = index.get("live_frontier", {})
     expected_live = {
         "physical_local_cloud_local_run": "NOT_EXERCISED",
         "live_provider_network": "NOT_EXERCISED",
@@ -147,14 +189,42 @@ def verify_docs(index: dict, readme: str, agents: str, preflight: dict) -> None:
         "human": "NOT_EXERCISED",
         "release": "NOT_PERFORMED",
     }
-    if live != expected_live:
+    if index.get("live_frontier") != expected_live:
         _refuse("LIVE_OR_RELEASE_PROMOTION")
+
+    handoff = index.get("local_handoff", {})
+    if handoff.get("id") != "LH-TV-001":
+        _refuse("LOCAL_HANDOFF_ROUTE_DRIFT")
+    if handoff.get("parent_requirement") != "ed3c/truth-verify-loop#22":
+        _refuse("LOCAL_HANDOFF_ROUTE_DRIFT")
+    if handoff.get("physical_owner") != "ed3c/bettor-arena#186":
+        _refuse("LOCAL_HANDOFF_OWNER_DRIFT")
+    if handoff.get("state") != "HANDOFF_READY_NOT_EXERCISED":
+        _refuse("LOCAL_HANDOFF_SELF_PROMOTION")
+    exact_base = handoff.get("exact_base", {})
+    if exact_base != {
+        "repository": "ed3c/truth-verify-loop",
+        "commit": "123bee539157331cb976c2926f4359352430bfd1",
+        "tree": "507a4bda6e0df459fca1d71c838c9386cf3aff79",
+    }:
+        _refuse("LOCAL_HANDOFF_BASE_DRIFT")
+    if handoff.get("receipt") != "tvl.dual-agent-evidence-bundle.v1":
+        _refuse("LOCAL_HANDOFF_RECEIPT_DRIFT")
+    required_inputs = handoff.get("required_inputs")
+    if not isinstance(required_inputs, list) or len(required_inputs) < 8:
+        _refuse("LOCAL_HANDOFF_INPUTS_INCOMPLETE")
 
     if preflight.get("schema") != "tvl.dual-agent-verification-matrix-preflight.v1":
         _refuse("MATRIX_PREFLIGHT_DRIFT")
     parent = preflight.get("parent", {})
     root = EXPECTED_NODES["DA-TV-C"]
-    if parent.get("pr") != root["pr"] or parent.get("head") != root["head"] or parent.get("tree") != root["tree"] or parent.get("targeted_run") != root["targeted_run"] or parent.get("repository_verify_run") != root["repository_verify_run"]:
+    if (
+        parent.get("pr") != root["pr"]
+        or parent.get("head") != root["head"]
+        or parent.get("tree") != root["tree"]
+        or parent.get("targeted_run") != root["targeted_run"]
+        or parent.get("repository_verify_run") != root["repository_verify_run"]
+    ):
         _refuse("MATRIX_PREFLIGHT_DRIFT", "parent")
     expected_siblings = {"DA-TV-DLV", "DA-TV-EF", "DA-TV-ART", "DA-TV-USER"}
     siblings = preflight.get("siblings")
@@ -172,8 +242,10 @@ def verify_docs(index: dict, readme: str, agents: str, preflight: dict) -> None:
     readme_tokens = [
         "existing `tvl.evidence-closure.v1`",
         "UNVERIFIABLE",
-        "COMPLETE_DETERMINISTIC_DUAL_AGENT_TRUTH_MATRIX_ONLY",
+        EXPECTED_CEILING,
         "canonical_write=NONE",
+        "123bee539157331cb976c2926f4359352430bfd1",
+        "LH-TV-001",
         "real local→cloud→local physical run",
         "Screenshot presence is not semantic proof",
         "Backend completion is not user-visible success",
@@ -191,8 +263,10 @@ def verify_docs(index: dict, readme: str, agents: str, preflight: dict) -> None:
         "canonical_write=NONE",
         "Technical verifier PASS cannot emit SUPPORTED/REFUTED by itself.",
         "Shadow stop conditions",
-        "DA-TV-D / issue #37",
+        "DA-TV-D / #37",
         "DA-TV-ART must hash independently supplied captured/read-back bytes.",
+        "123bee539157331cb976c2926f4359352430bfd1",
+        "LH-TV-001",
     ]
     for token in agents_tokens:
         if token not in agents:
@@ -221,6 +295,12 @@ class DualAgentDocsTraceabilityTest(unittest.TestCase):
         changed["nodes"][0]["head"] = "0" * 40
         self.assert_code("EXACT_SUBJECT_OR_RUN_DRIFT", lambda: verify_docs(changed, readme, agents, preflight))
 
+    def test_main_integration_drift_is_refused(self) -> None:
+        index, readme, agents, preflight = self.load()
+        changed = deepcopy(index)
+        changed["integration_main"]["commit"] = "0" * 40
+        self.assert_code("MAIN_INTEGRATION_SUBJECT_DRIFT", lambda: verify_docs(changed, readme, agents, preflight))
+
     def test_run_drift_is_refused(self) -> None:
         index, readme, agents, preflight = self.load()
         changed = deepcopy(index)
@@ -237,7 +317,7 @@ class DualAgentDocsTraceabilityTest(unittest.TestCase):
         index, readme, agents, preflight = self.load()
         changed = deepcopy(index)
         changed["docs_subject_state"] = "RELEASED"
-        self.assert_code("DOCS_SELF_PROMOTION", lambda: verify_docs(changed, readme, agents, preflight))
+        self.assert_code("DOCS_INTEGRATION_STATE_DRIFT", lambda: verify_docs(changed, readme, agents, preflight))
 
     def test_live_state_cannot_be_promoted(self) -> None:
         index, readme, agents, preflight = self.load()
@@ -274,6 +354,18 @@ class DualAgentDocsTraceabilityTest(unittest.TestCase):
         changed = deepcopy(preflight)
         changed["siblings"][0]["targeted_run"] += 1
         self.assert_code("MATRIX_PREFLIGHT_DRIFT", lambda: verify_docs(index, readme, agents, changed))
+
+    def test_local_handoff_owner_cannot_drift(self) -> None:
+        index, readme, agents, preflight = self.load()
+        changed = deepcopy(index)
+        changed["local_handoff"]["physical_owner"] = "truth-verify-loop"
+        self.assert_code("LOCAL_HANDOFF_OWNER_DRIFT", lambda: verify_docs(changed, readme, agents, preflight))
+
+    def test_local_handoff_cannot_self_promote(self) -> None:
+        index, readme, agents, preflight = self.load()
+        changed = deepcopy(index)
+        changed["local_handoff"]["state"] = "LIVE_PASS"
+        self.assert_code("LOCAL_HANDOFF_SELF_PROMOTION", lambda: verify_docs(changed, readme, agents, preflight))
 
 
 if __name__ == "__main__":

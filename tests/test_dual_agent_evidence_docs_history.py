@@ -28,9 +28,22 @@ class DualAgentDocsFailureHistoryTest(unittest.TestCase):
             index["evidence_ceiling"],
             "COMPLETE_DETERMINISTIC_DUAL_AGENT_TRUTH_MATRIX_ONLY",
         )
-        self.assertEqual(index["docs_subject_state"], "CANDIDATE_SUBJECT_PENDING")
+        self.assertEqual(index["docs_subject_state"], "IMPLEMENTATION_MERGED_TO_MAIN")
+        self.assertEqual(
+            index["integration_main"],
+            {
+                "repository": "ed3c/truth-verify-loop",
+                "branch": "main",
+                "commit": "123bee539157331cb976c2926f4359352430bfd1",
+                "tree": "507a4bda6e0df459fca1d71c838c9386cf3aff79",
+                "merge_pr": 28,
+                "merge_chain": [45, 44, 39, 29, 28],
+                "state": "DETERMINISTIC_IMPLEMENTATION_IN_MAIN",
+            },
+        )
         self.assertEqual(index["live_frontier"]["human"], "NOT_EXERCISED")
         self.assertEqual(index["live_frontier"]["release"], "NOT_PERFORMED")
+        self.assertEqual(index["local_handoff"]["state"], "HANDOFF_READY_NOT_EXERCISED")
 
 
 if __name__ == "__main__":

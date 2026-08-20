@@ -22,6 +22,15 @@ class DualAgentDocsFailureHistoryTest(unittest.TestCase):
         }
         self.assertIn(expected, failures)
 
+        post_merge = {
+            "pr": 46,
+            "head": "5bec79cb02bf9fb413c317be4f3dc5a9c9e33a16",
+            "run": 32325711166,
+            "finding": "POST_MERGE_DOCS_TOKEN_AND_HISTORY_EXPECTATION_DRIFT",
+            "resolution_head": "19ae75ec7e151fdb76ae7b78ac859ef39b790fd3",
+        }
+        self.assertIn(post_merge, failures)
+
     def test_failure_history_does_not_raise_evidence_ceiling(self) -> None:
         index = json.loads(INDEX.read_text())
         self.assertEqual(

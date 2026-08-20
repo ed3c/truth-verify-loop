@@ -1,0 +1,153 @@
+{
+  "schema_version": "inception-owner-preflight/v1",
+  "atom_id": "INCEPTION-A3",
+  "stage": "OWNER_PUBLIC_VERIFICATION",
+  "state": "PUBLIC_BLOB_SEMANTIC_CANARY_CANDIDATE",
+  "repository": "ed3c/truth-verify-loop",
+  "branch": "agent/inception-a3-exact-evidence-v2",
+  "base_subject": {
+    "commit": "c01254547672a9ad03345c9013b20d3d1049e274",
+    "tree": "577213165a091aee389e9c7028570eb8cf6da1c7",
+    "baseline_pull_request": 29,
+    "baseline_verify_run": 32252254820
+  },
+  "controller_subject": {
+    "repository": "ed3c/enterprise_agent_system",
+    "pull_request": 29,
+    "commit": "6e0a916fd06dd8635d77c9a8c4d1b475185ea13e",
+    "tree": "c3851a6953d456d0342a9776eed28561c1af0ca1",
+    "packet_digest": "sha256:8ed7553094f26df439f796e25ef83cdbe6916d0c50e8e659905ca12d3bd44ad6",
+    "bundle_digest": "sha256:dc4473b3195a738e55eb49c43661b6e1f4ea7f95c66749454776f2003b18ebc3"
+  },
+  "public_canary_subject": {
+    "repository": "ed3c/truth-verify-loop",
+    "commit": "c01254547672a9ad03345c9013b20d3d1049e274",
+    "tree": "577213165a091aee389e9c7028570eb8cf6da1c7",
+    "path": "harness/orchestrator.py",
+    "symbol": "run_live_verification"
+  },
+  "owner_issue": "ed3c/truth-verify-loop#23",
+  "upstream_issue": "ed3c/enterprise_agent_system#15",
+  "interface": "inception/code-source-citation-evidence",
+  "state_machine": [
+    "EXACT_SUBJECT_BOUND",
+    "PATH_AND_LOCATOR_CONFINED",
+    "PHYSICAL_OR_LEXICAL_READBACK_VERIFIED",
+    "PARSER_COVERAGE_DECLARED",
+    "SYMBOL_SNIPPET_OR_QUOTE_VERIFIED",
+    "SEMANTIC_REVIEW_DISPATCHED",
+    "DISAGREEMENT_OR_ABSTENTION_RECONCILED",
+    "SUPPORTED_OR_REFUTED_OR_CONFLICTED_OR_STALE_OR_UNVERIFIABLE",
+    "REPAIR_OR_HUMAN_REVIEW"
+  ],
+  "existing_mechanisms": [
+    "harness/model.py",
+    "harness/retriever.py",
+    "harness/documents.py",
+    "harness/closure.py",
+    "harness/lake.py",
+    "harness/lake_base.py",
+    "harness/lake_records.py",
+    "harness/lake_documents.py",
+    "harness/lake_rebuild.py",
+    "harness/semantic_adapters.py"
+  ],
+  "implementation_subjects": [
+    "schemas/inception-code-evidence.v1.schema.json",
+    "schemas/inception-citation-claim.v1.schema.json",
+    "harness/inception_evidence.py",
+    "tests/test_inception_evidence.py",
+    "harness/inception_public_canary.py",
+    "tests/test_inception_public_canary.py"
+  ],
+  "writable_paths": [
+    "docs/architecture/inception-exact-evidence/**",
+    "schemas/inception-code-evidence.v1.schema.json",
+    "schemas/inception-citation-claim.v1.schema.json",
+    "harness/inception_evidence.py",
+    "harness/inception_public_canary.py",
+    "tests/test_inception_evidence.py",
+    "tests/test_inception_public_canary.py",
+    "examples/inception-evidence/**",
+    ".github/workflows/inception-a3-evidence.yml"
+  ],
+  "conditional_paths": [
+    {
+      "path": "harness/model.py",
+      "condition": "adapter tests prove a versioned public contract extension is unavoidable"
+    },
+    {
+      "path": "harness/closure.py",
+      "condition": "existing gate composition cannot express the profile without weakening current semantics"
+    }
+  ],
+  "read_only_paths": [
+    "harness/retriever.py",
+    "harness/documents.py",
+    "harness/lake*.py",
+    "harness/semantic*.py",
+    "config/**",
+    "skills/**",
+    "examples/live-search/**"
+  ],
+  "resource_leases": [
+    "fixture-repository:inception-code-evidence",
+    "git-object-readback:truth-verify-loop-public-base",
+    "parser-session:inception-a3",
+    "semantic-fixture-reviewers:regex-plus-python-ast"
+  ],
+  "required_evidence_lanes": [
+    "PUBLIC_GIT_BLOB_READBACK",
+    "DETERMINISTIC_PHYSICAL",
+    "LEXICAL_CAPTURE",
+    "DUAL_METHOD_SEMANTIC_FIXTURE",
+    "PRIVATE_SOURCE_SEPARATE"
+  ],
+  "positive_controls": [
+    "repository commit and tree are read back from a real public Git object",
+    "public blob bytes are materialized into an isolated temporary root before validation",
+    "line range snippet digest symbol and parser identity are independently checked",
+    "regex and Python AST fixture reviewers use distinct mechanisms",
+    "reviewer disagreement produces CONFLICTED rather than support",
+    "lexical or physical PASS remains separate from semantic state"
+  ],
+  "mutation_controls": [
+    "mutable or stale repository subject",
+    "path traversal or symlink escape",
+    "out-of-range lines",
+    "snippet digest mismatch",
+    "absent symbol or signature",
+    "parser coverage claimed where unavailable",
+    "quote or locator mismatch",
+    "lexical match promoted to semantic support without separate receipt",
+    "one fixture reviewer disagrees but aggregate remains SUPPORTED",
+    "proposer and verifier share one mutable path",
+    "model Judge self-promotes truth or zero hallucination",
+    "private evidence secret or service-account path enters portable receipt"
+  ],
+  "cleanup_contract": {
+    "required": true,
+    "inventory": ["path", "process", "network_capture", "lake", "index", "artifact"],
+    "rollback_subject": "c01254547672a9ad03345c9013b20d3d1049e274"
+  },
+  "forbidden_actions": [
+    "mutate source repositories",
+    "persist private source bytes in portable fixtures",
+    "represent deterministic fixture reviewers as external independent model evidence",
+    "replace categorical closure with one score",
+    "self-promote semantic support",
+    "write canonical task effect Human or release state",
+    "close issues",
+    "merge",
+    "release",
+    "rollback"
+  ],
+  "claims_not_proven": [
+    "The public canary covers one fixed repository symbol, not arbitrary business claims.",
+    "The two semantic fixture reviewers are deterministic methods, not independent external providers.",
+    "No private evidence has been accessed.",
+    "No external semantic provider or Human reviewer has executed.",
+    "No business claim, Human admission, merge, release or rollback has occurred."
+  ],
+  "next_transition": "RUN_PUBLIC_SOURCE_CAPTURE_WITH_EXTERNAL_INDEPENDENT_SEMANTIC_REVIEW"
+}

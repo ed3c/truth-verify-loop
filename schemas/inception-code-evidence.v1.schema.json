@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/truth-verify-loop/inception-code-evidence.v1.schema.json",
+  "title": "Inception Code Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "repository", "commit", "tree", "path", "start_line", "end_line", "snippet_digest", "symbol", "parser", "parser_coverage", "physical_state", "claims_not_proven"],
+  "properties": {
+    "schema_version": {"const": "truth-verify-loop/inception-code-evidence/v1"},
+    "repository": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "tree": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "path": {"type": "string", "minLength": 1},
+    "start_line": {"type": "integer", "minimum": 1},
+    "end_line": {"type": "integer", "minimum": 1},
+    "snippet_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "symbol": {"type": ["string", "null"]},
+    "parser": {"enum": ["python-ast", "text-only", "unavailable"]},
+    "parser_coverage": {"enum": ["FULL", "LEXICAL_ONLY", "UNAVAILABLE"]},
+    "physical_state": {"enum": ["CANDIDATE", "PASS", "FAIL", "STALE", "UNVERIFIABLE"]},
+    "claims_not_proven": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  }
+}

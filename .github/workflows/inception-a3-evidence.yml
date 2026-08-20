@@ -1,0 +1,154 @@
+name: Inception A3 public verification
+
+on:
+  push:
+    branches: [agent/inception-a3-exact-evidence-v2]
+  pull_request:
+    paths:
+      - docs/architecture/inception-exact-evidence/**
+      - schemas/inception-code-evidence.v1.schema.json
+      - schemas/inception-citation-claim.v1.schema.json
+      - harness/inception_evidence.py
+      - harness/inception_public_canary.py
+      - tests/test_inception_evidence.py
+      - tests/test_inception_public_canary.py
+      - examples/inception-evidence/**
+      - .github/workflows/inception-a3-evidence.yml
+
+permissions:
+  contents: read
+
+jobs:
+  public-evidence-canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact workflow subject with public history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Validate exact A3 verification manifest and lease
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import subprocess
+
+          root = pathlib.Path.cwd()
+          manifest = json.loads((root / "docs/architecture/inception-exact-evidence/preflight.json").read_text())
+          exact = {
+              "schema_version": "inception-owner-preflight/v1",
+              "atom_id": "INCEPTION-A3",
+              "stage": "OWNER_PUBLIC_VERIFICATION",
+              "state": "PUBLIC_BLOB_SEMANTIC_CANARY_CANDIDATE",
+              "repository": "ed3c/truth-verify-loop",
+              "branch": "agent/inception-a3-exact-evidence-v2",
+          }
+          for key, value in exact.items():
+              assert manifest.get(key) == value, f"DRIFT:{key}"
+          base = manifest["base_subject"]
+          assert base == {
+              "commit": "c01254547672a9ad03345c9013b20d3d1049e274",
+              "tree": "577213165a091aee389e9c7028570eb8cf6da1c7",
+              "baseline_pull_request": 29,
+              "baseline_verify_run": 32252254820,
+          }
+          canary = manifest["public_canary_subject"]
+          assert canary["commit"] == base["commit"]
+          assert canary["tree"] == base["tree"]
+          assert canary["path"] == "harness/orchestrator.py"
+          assert canary["symbol"] == "run_live_verification"
+          controller = manifest["controller_subject"]
+          assert controller["commit"] == "6e0a916fd06dd8635d77c9a8c4d1b475185ea13e"
+          assert controller["packet_digest"] == "sha256:8ed7553094f26df439f796e25ef83cdbe6916d0c50e8e659905ca12d3bd44ad6"
+          for key in (
+              "state_machine", "existing_mechanisms", "implementation_subjects",
+              "writable_paths", "conditional_paths", "read_only_paths", "resource_leases",
+              "required_evidence_lanes", "positive_controls", "mutation_controls",
+              "forbidden_actions", "claims_not_proven",
+          ):
+              values = manifest.get(key)
+              assert isinstance(values, list) and values, key
+          assert not set(manifest["writable_paths"]) & set(manifest["read_only_paths"])
+          assert manifest["cleanup_contract"]["required"] is True
+          assert manifest["cleanup_contract"]["rollback_subject"] == base["commit"]
+          assert manifest["next_transition"] == "RUN_PUBLIC_SOURCE_CAPTURE_WITH_EXTERNAL_INDEPENDENT_SEMANTIC_REVIEW"
+
+          observed_tree = subprocess.check_output(
+              ["git", "rev-parse", f"{base['commit']}^{{tree}}"], text=True
+          ).strip()
+          assert observed_tree == base["tree"], "PUBLIC_TREE_READBACK_MISMATCH"
+
+          changed = subprocess.check_output(
+              ["git", "diff", "--name-only", f"{base['commit']}...HEAD"], text=True
+          ).splitlines()
+          allowed_exact = {
+              "schemas/inception-code-evidence.v1.schema.json",
+              "schemas/inception-citation-claim.v1.schema.json",
+              "harness/inception_evidence.py",
+              "harness/inception_public_canary.py",
+              "tests/test_inception_evidence.py",
+              "tests/test_inception_public_canary.py",
+              ".github/workflows/inception-a3-evidence.yml",
+          }
+          allowed_prefixes = (
+              "docs/architecture/inception-exact-evidence/",
+              "examples/inception-evidence/",
+          )
+          violations = [
+              path for path in changed
+              if path not in allowed_exact and not path.startswith(allowed_prefixes)
+          ]
+          assert not violations, f"PATH_LEASE_VIOLATION:{violations}"
+          assert set(manifest["implementation_subjects"]).issubset(set(changed)), "IMPLEMENTATION_SUBJECT_MISSING"
+          print(f"PASS atom=INCEPTION-A3 changed={len(changed)} mutations={len(manifest['mutation_controls'])}")
+          PY
+
+      - name: Execute hermetic exact-evidence and canary logic controls
+        run: |
+          python3 -m unittest tests.test_inception_evidence -v
+          python3 -m unittest tests.test_inception_public_canary -v
+
+      - name: Execute exact public Git-history readback canary
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from harness.inception_public_canary import (
+              PUBLIC_COMMIT,
+              PUBLIC_PATH,
+              PUBLIC_REPOSITORY,
+              PUBLIC_TREE,
+              run_public_blob_canary,
+          )
+
+          result = run_public_blob_canary(Path.cwd())
+          assert result["subject"]["repository"] == PUBLIC_REPOSITORY
+          assert result["subject"]["commit"] == PUBLIC_COMMIT
+          assert result["subject"]["tree"] == PUBLIC_TREE
+          assert result["subject"]["path"] == PUBLIC_PATH
+          assert result["code"]["physical_state"] == "PASS"
+          assert result["citation"]["lexical_state"] == "PASS"
+          assert result["citation"]["semantic_state"] == "SUPPORTED"
+          assert result["evidence_ceiling"] == "PUBLIC_DETERMINISTIC_FIXTURE_ONLY"
+          print("PASS inception-a3 exact public Git blob readback + dual-method fixture")
+          PY
+
+      - name: Compile exact Python subjects
+        run: |
+          python3 -m py_compile \
+            harness/inception_evidence.py \
+            harness/inception_public_canary.py \
+            tests/test_inception_evidence.py \
+            tests/test_inception_public_canary.py
+          python3 -m json.tool schemas/inception-code-evidence.v1.schema.json >/dev/null
+          python3 -m json.tool schemas/inception-citation-claim.v1.schema.json >/dev/null
+
+      - name: Run repository verification
+        run: bash verify.sh
+
+      - name: Check textual patch hygiene
+        run: git diff --check

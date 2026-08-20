@@ -65,7 +65,13 @@ def run_live_verification(
     outer_timeout_seconds: float = 330.0,
     instruction_files: tuple[Path, ...] = (),
     semantic_dispatcher: SemanticDispatcher | None = None,
+    evaluation_time: datetime | None = None,
 ) -> dict[str, Any]:
+    evaluation_clock = evaluation_time or utc_now()
+    if evaluation_clock.tzinfo is None:
+        raise HarnessError("evaluation_time must be timezone-aware")
+    evaluation_clock = evaluation_clock.astimezone(timezone.utc)
+
     lake.initialize()
     lake.upsert_claim(claim)
     decision = decide_live_search(
@@ -83,7 +89,12 @@ def run_live_verification(
     )
     if not decision.required:
         existing = lake.evidence_for_claim(claim.claim_id)
-        closure = close_claim(claim, existing, policy=policy)
+        closure = close_claim(
+            claim,
+            existing,
+            policy=policy,
+            now=evaluation_clock,
+        )
         lake.record_closure(closure)
         lake.write_manifest()
         return {"decision": decision.to_dict(), "closure": closure, "retrievals": []}
@@ -339,7 +350,12 @@ def run_live_verification(
         lake.upsert_evidence(evidence)
 
     all_evidence = lake.evidence_for_claim(claim.claim_id)
-    closure = close_claim(claim, all_evidence, policy=policy)
+    closure = close_claim(
+        claim,
+        all_evidence,
+        policy=policy,
+        now=evaluation_clock,
+    )
     closure["run"] = {
         "provider": provider_run.receipt.provider,
         "provider_receipt_sha256": receipt_blob["content_sha256"],
@@ -347,6 +363,7 @@ def run_live_verification(
         "model_knowledge_cutoff": format_timestamp(decision.model_knowledge_cutoff),
         "search_envelope_query": envelope.query,
         "accepted_in_this_run": [item.evidence_id for item in accepted],
+        "evaluation_time": format_timestamp(evaluation_clock),
     }
     lake.record_closure(closure)
     lake.append_ledger(

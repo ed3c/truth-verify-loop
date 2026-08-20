@@ -14,17 +14,32 @@ SPEC.loader.exec_module(MODULE)
 
 
 class PublicSurfaceTests(unittest.TestCase):
-    def _root(self) -> Path:
+    def _root(self, *, license_text: str = "MIT License\n") -> Path:
         root = Path(tempfile.mkdtemp())
         for name in ("README.md", "AGENTS.md", "SECURITY.md"):
             (root / name).write_text(f"# {name}\n", encoding="utf-8")
-        (root / "LICENSE").write_text("MIT License\n", encoding="utf-8")
+        (root / "LICENSE").write_text(license_text, encoding="utf-8")
         return root
 
     def test_good_tree_passes(self) -> None:
         root = self._root()
         (root / "guide.md").write_text("[readme](README.md)\n", encoding="utf-8")
         self.assertEqual(MODULE.check(root), [])
+
+    def test_apache_2_license_passes(self) -> None:
+        root = self._root(
+            license_text=(
+                "                                 Apache License\n"
+                "                           Version 2.0, January 2004\n"
+                "                        http://www.apache.org/licenses/\n"
+            )
+        )
+        self.assertEqual(MODULE.check(root), [])
+
+    def test_unknown_license_turns_gate_red(self) -> None:
+        root = self._root(license_text="Custom Unknown License\n")
+        failures = MODULE.check(root)
+        self.assertTrue(any("LICENSE is not recognized" in item for item in failures), failures)
 
     def test_private_path_turns_gate_red(self) -> None:
         root = self._root()

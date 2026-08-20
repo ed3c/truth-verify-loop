@@ -1,0 +1,47 @@
+name: Dual-Agent independent verification matrix
+
+on:
+  pull_request:
+    paths:
+      - "harness/dual_agent_evidence/**"
+      - "tests/test_dual_agent_evidence_*.py"
+      - ".github/workflows/dual-agent-evidence-matrix.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verification-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.14"]
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Install Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Validate exact-subject preflight JSON
+        run: python -m json.tool harness/dual_agent_evidence/matrix-preflight.json >/dev/null
+      - name: Re-run root evidence contract
+        run: python -m unittest tests.test_dual_agent_evidence_contract
+      - name: Re-run delivery workflow controls
+        run: python -m unittest tests.test_dual_agent_evidence_delivery
+      - name: Re-run effect lineage controls
+        run: python -m unittest tests.test_dual_agent_evidence_effect
+      - name: Re-run source artifact controls
+        run: python -m unittest tests.test_dual_agent_evidence_artifact
+      - name: Re-run user result controls
+        run: python -m unittest tests.test_dual_agent_evidence_user_result
+      - name: Run complete cross-family matrix controls
+        run: python -m unittest tests.test_dual_agent_evidence_matrix
+      - name: Run repository verification
+        run: bash verify.sh

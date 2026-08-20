@@ -1,0 +1,122 @@
+{
+  "schema": "tvl.dual-agent-evidence-stack-index.v1",
+  "parent_issue": 22,
+  "docs_issue": 37,
+  "docs_pr": 45,
+  "docs_subject_state": "CANDIDATE_SUBJECT_PENDING",
+  "green_baseline": {
+    "pr": 29,
+    "head": "c01254547672a9ad03345c9013b20d3d1049e274",
+    "tree": "577213165a091aee389e9c7028570eb8cf6da1c7",
+    "repository_verify_run": 32252254820
+  },
+  "nodes": [
+    {
+      "atom": "DA-TV-C",
+      "issue": 31,
+      "pr": 39,
+      "head": "944af8fc0230a9aae31ad47d6cb6051e10521bc7",
+      "tree": "1bb3589e20c157136a2597a51db15599226f4c6a",
+      "targeted_run": 32297448276,
+      "repository_verify_run": 32297448445,
+      "state": "DETERMINISTIC_PASS"
+    },
+    {
+      "atom": "DA-TV-DLV",
+      "issue": 32,
+      "pr": 40,
+      "head": "1faf6f818ecb9c70d122461421edf3b720e0f18e",
+      "tree": "120f9e496923c428cb8c3ccd53009b2e0c92175a",
+      "targeted_run": 32297590276,
+      "repository_verify_run": 32297590291,
+      "state": "DETERMINISTIC_PASS"
+    },
+    {
+      "atom": "DA-TV-EF",
+      "issue": 33,
+      "pr": 41,
+      "head": "84170be2faac66fadadb1e74ef605c7006b7e898",
+      "tree": "01c380ff49a3274cecda8c233db676f45b73c777",
+      "targeted_run": 32297636307,
+      "repository_verify_run": 32297636445,
+      "state": "DETERMINISTIC_PASS"
+    },
+    {
+      "atom": "DA-TV-ART",
+      "issue": 34,
+      "pr": 42,
+      "head": "080f623cdc7f163ca941ec31838ee6171d8bf999",
+      "tree": "cd70a2875dc022a3af5d07512cf15b3345444b11",
+      "targeted_run": 32297675577,
+      "repository_verify_run": 32297675560,
+      "state": "DETERMINISTIC_PASS"
+    },
+    {
+      "atom": "DA-TV-USER",
+      "issue": 35,
+      "pr": 43,
+      "head": "781388d84490a902d4cad414673164b40c3927d2",
+      "tree": "6ff6a9df8d69a5dd35c42eddbb053bbc2be5be4a",
+      "targeted_run": 32297728757,
+      "repository_verify_run": 32297728719,
+      "state": "DETERMINISTIC_PASS"
+    },
+    {
+      "atom": "DA-TV-E",
+      "issue": 36,
+      "pr": 44,
+      "head": "55d13fe61eec88cd1cd5f04f0670a83ebc366953",
+      "tree": "e8f5194b91814d26e3c87cc194cf8789a87db4b5",
+      "targeted_run": 32298186985,
+      "repository_verify_run": 32298186805,
+      "state": "COMPLETE_DETERMINISTIC_MATRIX_PASS"
+    }
+  ],
+  "retained_failures": [
+    {
+      "pr": 38,
+      "head": "da09b28ba76a292fdecb170dd24752fc5c1f55e8",
+      "run": 32295680345,
+      "finding": "PRODUCER_VERSION_VALIDATOR_SCHEMA_MISMATCH"
+    },
+    {
+      "pr": 38,
+      "head": "125085edee395d193c15a315f289a214ee507ed8",
+      "run": 32295801844,
+      "finding": "INHERITED_MAIN_BASELINE_SEMANTIC_FRESHNESS_FAILURE"
+    },
+    {
+      "pr": 39,
+      "head_before_repair": "fe07768c2354813ca2ee3f492b229b7de94869db",
+      "finding": "SHADOW_SCHEMA_REVIEW_CLOSURE_AS_OF_WAS_NULL",
+      "resolution_head": "944af8fc0230a9aae31ad47d6cb6051e10521bc7"
+    },
+    {
+      "pr": 45,
+      "head": "b6a9bcfd08bc59b5151cd4507313a1882dcec7fa",
+      "run": 32298782739,
+      "finding": "AGENT_ROUTE_INCOMPLETE_NORMATIVE_TOKEN",
+      "resolution_head": "60c06a62af6a15149da2b3d49998a18d44e87f70"
+    }
+  ],
+  "authority": {
+    "truth_vocabulary_owner": "existing-truth-verify-loop-closure-plane",
+    "technical_matrix_canonical_write": "NONE",
+    "execution_authority": "EXTERNAL",
+    "workflow_authority": "EXTERNAL",
+    "effect_authority": "EXTERNAL",
+    "semantic_claim_direction_owner": "existing-truth-verify-loop-semantic-plane",
+    "human_admission": "EXTERNAL",
+    "release": "EXTERNAL"
+  },
+  "evidence_ceiling": "COMPLETE_DETERMINISTIC_DUAL_AGENT_TRUTH_MATRIX_ONLY",
+  "live_frontier": {
+    "physical_local_cloud_local_run": "NOT_EXERCISED",
+    "live_provider_network": "NOT_EXERCISED",
+    "private_source_evidence": "NOT_EXERCISED",
+    "semantic_claim_closure": "NOT_EXERCISED_BY_DA_TV_MATRIX",
+    "live_user_result": "NOT_EXERCISED",
+    "human": "NOT_EXERCISED",
+    "release": "NOT_PERFORMED"
+  }
+}

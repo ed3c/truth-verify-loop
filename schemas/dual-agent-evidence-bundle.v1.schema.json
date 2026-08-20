@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/truth-verify-loop/schemas/dual-agent-evidence-bundle.v1.schema.json",
+  "title": "Truth Verify Loop Dual-Agent Evidence Bundle v1",
+  "type": "object",
+  "required": [
+    "schema",
+    "bundle_id",
+    "claim_id",
+    "run_id",
+    "job_id",
+    "tenant_scope",
+    "required_families",
+    "receipts",
+    "external_states"
+  ],
+  "properties": {
+    "schema": {"const": "tvl.dual-agent-evidence-bundle.v1"},
+    "bundle_id": {"type": "string", "minLength": 3},
+    "claim_id": {"type": "string", "minLength": 3},
+    "run_id": {"type": "string", "minLength": 3},
+    "job_id": {"type": "string", "minLength": 3},
+    "tenant_scope": {"type": "string", "minLength": 3},
+    "requested_closure_state": {
+      "type": ["string", "null"],
+      "enum": ["SUPPORTED", "REFUTED", "CONFLICTED", "STALE", "UNVERIFIABLE", null]
+    },
+    "required_families": {
+      "const": [
+        "SOURCE",
+        "BINDING",
+        "DELIVERY",
+        "WORKFLOW",
+        "PROVIDER_RUNTIME",
+        "ROUTE_OBSERVATION",
+        "EFFECT",
+        "ARTIFACT",
+        "INBOX",
+        "USER_RESULT",
+        "CLEANUP",
+        "HUMAN",
+        "RELEASE"
+      ]
+    },
+    "receipts": {
+      "type": "array",
+      "minItems": 13,
+      "items": {"$ref": "#/$defs/receipt"}
+    },
+    "external_states": {
+      "type": "object",
+      "required": ["task", "effect", "human", "release"],
+      "properties": {
+        "task": {"const": "NOT_EXERCISED"},
+        "effect": {"const": "NOT_EXERCISED"},
+        "human": {"const": "NOT_EXERCISED"},
+        "release": {"const": "NOT_PERFORMED"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "producer": {
+      "type": "object",
+      "required": ["repository", "commit", "tree", "schema", "version", "digest"],
+      "properties": {
+        "repository": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "tree": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "schema": {"type": "string", "minLength": 3},
+        "version": {"type": "string", "minLength": 1},
+        "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "receipt": {
+      "type": "object",
+      "required": [
+        "receipt_id",
+        "family",
+        "lane",
+        "run_id",
+        "job_id",
+        "tenant_scope",
+        "attempt_id",
+        "sequence",
+        "state",
+        "producer",
+        "payload",
+        "payload_digest",
+        "evidence_class"
+      ],
+      "properties": {
+        "receipt_id": {"type": "string", "minLength": 3},
+        "family": {
+          "enum": [
+            "SOURCE",
+            "BINDING",
+            "DELIVERY",
+            "WORKFLOW",
+            "PROVIDER_RUNTIME",
+            "ROUTE_OBSERVATION",
+            "EFFECT",
+            "ARTIFACT",
+            "INBOX",
+            "USER_RESULT",
+            "CLEANUP",
+            "HUMAN",
+            "RELEASE"
+          ]
+        },
+        "lane": {"enum": ["LOCAL", "CLOUD", "API", "BROWSER", "PROVIDER", "USER", "HUMAN", "RELEASE", "CROSS_LANE"]},
+        "run_id": {"type": "string", "minLength": 3},
+        "job_id": {"type": "string", "minLength": 3},
+        "tenant_scope": {"type": "string", "minLength": 3},
+        "attempt_id": {"type": "string", "minLength": 3},
+        "sequence": {"type": "integer", "minimum": 0},
+        "state": {"type": "string", "minLength": 1},
+        "producer": {"$ref": "#/$defs/producer"},
+        "payload": {"type": "object"},
+        "payload_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "evidence_class": {"enum": ["DETERMINISTIC_FIXTURE", "PUBLIC_READBACK", "LIVE_READBACK", "HUMAN_ATTESTATION", "RELEASE_RECORD"]},
+        "observed_at": {"type": ["string", "null"], "format": "date-time"},
+        "canonical_write": {"enum": ["NONE", "OBSERVATION_ONLY", "PROPOSAL_ONLY", null]}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

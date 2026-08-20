@@ -3,7 +3,16 @@
   "parent_issue": 22,
   "docs_issue": 37,
   "docs_pr": 45,
-  "docs_subject_state": "CANDIDATE_SUBJECT_PENDING",
+  "docs_subject_state": "IMPLEMENTATION_MERGED_TO_MAIN",
+  "integration_main": {
+    "repository": "ed3c/truth-verify-loop",
+    "branch": "main",
+    "commit": "123bee539157331cb976c2926f4359352430bfd1",
+    "tree": "507a4bda6e0df459fca1d71c838c9386cf3aff79",
+    "merge_pr": 28,
+    "merge_chain": [45, 44, 39, 29, 28],
+    "state": "DETERMINISTIC_IMPLEMENTATION_IN_MAIN"
+  },
   "green_baseline": {
     "pr": 29,
     "head": "c01254547672a9ad03345c9013b20d3d1049e274",
@@ -19,7 +28,8 @@
       "tree": "1bb3589e20c157136a2597a51db15599226f4c6a",
       "targeted_run": 32297448276,
       "repository_verify_run": 32297448445,
-      "state": "DETERMINISTIC_PASS"
+      "state": "MERGED_CLOSED_DETERMINISTIC",
+      "integration_merge": "a1b09a70bf6c6ec75c7a4a2b5328d67231ac929b"
     },
     {
       "atom": "DA-TV-DLV",
@@ -29,7 +39,7 @@
       "tree": "120f9e496923c428cb8c3ccd53009b2e0c92175a",
       "targeted_run": 32297590276,
       "repository_verify_run": 32297590291,
-      "state": "DETERMINISTIC_PASS"
+      "state": "IN_MAIN_VIA_CONVERGENCE_44"
     },
     {
       "atom": "DA-TV-EF",
@@ -39,7 +49,7 @@
       "tree": "01c380ff49a3274cecda8c233db676f45b73c777",
       "targeted_run": 32297636307,
       "repository_verify_run": 32297636445,
-      "state": "DETERMINISTIC_PASS"
+      "state": "IN_MAIN_VIA_CONVERGENCE_44"
     },
     {
       "atom": "DA-TV-ART",
@@ -49,7 +59,7 @@
       "tree": "cd70a2875dc022a3af5d07512cf15b3345444b11",
       "targeted_run": 32297675577,
       "repository_verify_run": 32297675560,
-      "state": "DETERMINISTIC_PASS"
+      "state": "IN_MAIN_VIA_CONVERGENCE_44"
     },
     {
       "atom": "DA-TV-USER",
@@ -59,7 +69,7 @@
       "tree": "6ff6a9df8d69a5dd35c42eddbb053bbc2be5be4a",
       "targeted_run": 32297728757,
       "repository_verify_run": 32297728719,
-      "state": "DETERMINISTIC_PASS"
+      "state": "IN_MAIN_VIA_CONVERGENCE_44"
     },
     {
       "atom": "DA-TV-E",
@@ -69,7 +79,19 @@
       "tree": "e8f5194b91814d26e3c87cc194cf8789a87db4b5",
       "targeted_run": 32298186985,
       "repository_verify_run": 32298186805,
-      "state": "COMPLETE_DETERMINISTIC_MATRIX_PASS"
+      "state": "MERGED_COMPLETE_DETERMINISTIC_MATRIX",
+      "integration_merge": "280873959db52f241beea53becd4e5d0e339426d"
+    },
+    {
+      "atom": "DA-TV-D",
+      "issue": 37,
+      "pr": 45,
+      "head": "401a105d7768640dbdda8672f358407f7eb648e0",
+      "tree": "507a4bda6e0df459fca1d71c838c9386cf3aff79",
+      "targeted_run": 32320671872,
+      "repository_verify_run": 32320671837,
+      "state": "MERGED_CLOSED_DETERMINISTIC_TRACE",
+      "integration_merge": "5a9223b4525966550921c2727b144f119ff82c9a"
     }
   ],
   "retained_failures": [
@@ -99,6 +121,13 @@
       "resolution_head": "60c06a62af6a15149da2b3d49998a18d44e87f70"
     }
   ],
+  "closure_actions": {
+    "issues_ready_to_close_completed": [25, 27, 31, 32, 33, 34, 35, 36, 37],
+    "prs_merged": [28, 29, 39, 44, 45],
+    "prs_ready_to_close_completed_via_convergence": [40, 41, 42, 43],
+    "prs_ready_to_close_superseded": [24, 26, 38],
+    "issues_keep_open": [22]
+  },
   "authority": {
     "truth_vocabulary_owner": "existing-truth-verify-loop-closure-plane",
     "technical_matrix_canonical_write": "NONE",
@@ -118,5 +147,32 @@
     "live_user_result": "NOT_EXERCISED",
     "human": "NOT_EXERCISED",
     "release": "NOT_PERFORMED"
+  },
+  "local_handoff": {
+    "id": "LH-TV-001",
+    "parent_requirement": "ed3c/truth-verify-loop#22",
+    "physical_owner": "ed3c/bettor-arena#186",
+    "exact_base": {
+      "repository": "ed3c/truth-verify-loop",
+      "commit": "123bee539157331cb976c2926f4359352430bfd1",
+      "tree": "507a4bda6e0df459fca1d71c838c9386cf3aff79"
+    },
+    "rollback_commit": "ce0c90f0c9bc87427d433ce537eea7f3a0fca008",
+    "state": "HANDOFF_READY_NOT_EXERCISED",
+    "idempotency": "one job identity and canonical effect identities; no accepted duplicate observable effect",
+    "timeout": "all transport workflow provider readback effect and cleanup attempts are bounded and retained",
+    "receipt": "tvl.dual-agent-evidence-bundle.v1",
+    "verifier": "truth-verify-loop contract + DLV + EF + ART + USER + matrix + existing semantic closure",
+    "required_inputs": [
+      "actual local outbox restart reconnect and inbox receipts",
+      "actual cloud workflow provider sandbox and route observations",
+      "exact runtime identity target policy and source subjects",
+      "complete duplicate retry timeout cancel and failed-attempt denominator",
+      "actual source and artifact bytes for readback",
+      "distinct provider route and user-visible observations",
+      "optional effect and compensation lineage",
+      "cleanup residue inventory",
+      "authorized Human decision where required"
+    ]
   }
 }

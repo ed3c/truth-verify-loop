@@ -1,0 +1,88 @@
+{
+  "schema": "tvl.dual-agent-verification-matrix-preflight.v1",
+  "parent": {
+    "issue": 31,
+    "pr": 39,
+    "head": "944af8fc0230a9aae31ad47d6cb6051e10521bc7",
+    "tree": "1bb3589e20c157136a2597a51db15599226f4c6a",
+    "targeted_run": 32297448276,
+    "repository_verify_run": 32297448445
+  },
+  "siblings": [
+    {
+      "atom": "DA-TV-DLV",
+      "issue": 32,
+      "pr": 40,
+      "head": "1faf6f818ecb9c70d122461421edf3b720e0f18e",
+      "tree": "120f9e496923c428cb8c3ccd53009b2e0c92175a",
+      "targeted_run": 32297590276,
+      "repository_verify_run": 32297590291,
+      "files": {
+        "harness/dual_agent_evidence/delivery.py": "a3b2ede31515790355fcce1afc0c4798cdb677eb",
+        "tests/test_dual_agent_evidence_delivery.py": "ebc1ccb7908c7a0545f7b73c0c91eb72e53fd73e"
+      }
+    },
+    {
+      "atom": "DA-TV-EF",
+      "issue": 33,
+      "pr": 41,
+      "head": "84170be2faac66fadadb1e74ef605c7006b7e898",
+      "tree": "01c380ff49a3274cecda8c233db676f45b73c777",
+      "targeted_run": 32297636307,
+      "repository_verify_run": 32297636445,
+      "files": {
+        "harness/dual_agent_evidence/effect.py": "d1eae1e03ccbc39bb757b31c4161a64a461bb637",
+        "tests/test_dual_agent_evidence_effect.py": "39645082f06f93f6523671a76276937b49a4737a"
+      }
+    },
+    {
+      "atom": "DA-TV-ART",
+      "issue": 34,
+      "pr": 42,
+      "head": "080f623cdc7f163ca941ec31838ee6171d8bf999",
+      "tree": "cd70a2875dc022a3af5d07512cf15b3345444b11",
+      "targeted_run": 32297675577,
+      "repository_verify_run": 32297675560,
+      "files": {
+        "harness/dual_agent_evidence/artifact.py": "15cfe114ff79cac04459f296f784b26c175a18c1",
+        "tests/test_dual_agent_evidence_artifact.py": "850594e998bcdc2c99bfe41a0a17bf0c461165e1"
+      }
+    },
+    {
+      "atom": "DA-TV-USER",
+      "issue": 35,
+      "pr": 43,
+      "head": "781388d84490a902d4cad414673164b40c3927d2",
+      "tree": "6ff6a9df8d69a5dd35c42eddbb053bbc2be5be4a",
+      "targeted_run": 32297728757,
+      "repository_verify_run": 32297728719,
+      "files": {
+        "harness/dual_agent_evidence/user_result.py": "03ce28f1176100bad6cc702d1d6c63c25dfc4bbe",
+        "tests/test_dual_agent_evidence_user_result.py": "8cd163645e05839498848522d722a1256dda288c"
+      }
+    }
+  ],
+  "retained_failures": [
+    {
+      "pr": 38,
+      "head": "da09b28ba76a292fdecb170dd24752fc5c1f55e8",
+      "run": 32295680345,
+      "finding": "PRODUCER_VERSION_VALIDATOR_SCHEMA_MISMATCH"
+    },
+    {
+      "pr": 38,
+      "head": "125085edee395d193c15a315f289a214ee507ed8",
+      "run": 32295801844,
+      "finding": "INHERITED_MAIN_BASELINE_SEMANTIC_FRESHNESS_FAILURE"
+    }
+  ],
+  "evidence_ceiling": "COMPLETE_DETERMINISTIC_DUAL_AGENT_TRUTH_MATRIX_ONLY",
+  "external_states": {
+    "live_provider": "NOT_EXERCISED",
+    "live_network": "NOT_EXERCISED",
+    "live_user_result": "NOT_EXERCISED",
+    "semantic_claim_closure": "NOT_EXERCISED",
+    "human": "NOT_EXERCISED",
+    "release": "NOT_PERFORMED"
+  }
+}

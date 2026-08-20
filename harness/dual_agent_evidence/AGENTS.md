@@ -47,6 +47,8 @@ UNVERIFIABLE
 
 The deterministic DA-TV matrix **must** end `UNVERIFIABLE`. A fully green technical matrix means the evidence bundle is technically consistent under the exercised controls; it does not decide semantic claim direction.
 
+Technical verifier PASS cannot emit SUPPORTED/REFUTED by itself.
+
 ## State machine
 
 ```text

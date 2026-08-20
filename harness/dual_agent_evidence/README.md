@@ -47,7 +47,7 @@ local request committed while offline
 → cleanup and Human review
 ```
 
-This repository has closed the **independent deterministic verification** required to audit such a run. The physical run itself remains owned by `ed3c/bettor-arena#186` and is still `NOT_EXERCISED`.
+This repository has closed the **independent deterministic verification** required to audit such a run. The **real local→cloud→local physical run** remains owned by `ed3c/bettor-arena#186` and is still `NOT_EXERCISED`.
 
 ## Authority map
 

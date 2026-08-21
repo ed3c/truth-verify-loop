@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/truth-verify-loop/schemas/kaw-domain-receipt.v1.schema.json",
+  "title": "Truth Verify Loop KAW domain receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "lane",
+    "receipt_id",
+    "authority",
+    "environment",
+    "policy",
+    "subject",
+    "verdict",
+    "disclosure",
+    "cleanup",
+    "evidence_boundary"
+  ],
+  "properties": {
+    "schema": {"const": "tvl.kaw-domain-receipt.v1"},
+    "lane": {"const": "L5_LIVE_DOMAIN_AUTHORITY_RECEIPT"},
+    "receipt_id": {"const": "TVL-KAW-PUBLIC-SYNTHETIC-1"},
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "owner"],
+      "properties": {
+        "kind": {"const": "DOMAIN_REPOSITORY"},
+        "owner": {"const": "truth-verify-loop"}
+      }
+    },
+    "environment": {"const": "PUBLIC_SYNTHETIC_CI"},
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine",
+        "policy_version",
+        "closure_schema",
+        "closure_engine_blob",
+        "semantic_verifier_schema_blob",
+        "source_policy_digest"
+      ],
+      "properties": {
+        "engine": {"const": "harness.closure.close_claim"},
+        "policy_version": {"const": "source-policy-default-v1"},
+        "closure_schema": {"const": "tvl.evidence-closure.v1"},
+        "closure_engine_blob": {"const": "3cbbc664e3a28f99be097996dc6e229a6417c581"},
+        "semantic_verifier_schema_blob": {"const": "2c9085b66d080abcede3861812d15bdc92986d04"},
+        "source_policy_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim_id",
+        "claim_digest",
+        "source_content_digest",
+        "evidence_record_digest",
+        "source_count",
+        "source_freshness"
+      ],
+      "properties": {
+        "claim_id": {"const": "synthetic-sdk-release"},
+        "claim_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_content_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "evidence_record_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_count": {"const": 1},
+        "source_freshness": {"const": "CURRENT"}
+      }
+    },
+    "verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "closed",
+        "as_of",
+        "expires_at",
+        "closure_digest",
+        "evidence_ceiling",
+        "accepted_evidence_count",
+        "supporting_evidence_count",
+        "refuting_evidence_count"
+      ],
+      "properties": {
+        "state": {"const": "SUPPORTED"},
+        "closed": {"const": true},
+        "as_of": {"const": "2026-08-21T00:00:00Z"},
+        "expires_at": {"const": "2027-08-21T00:00:00Z"},
+        "closure_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "evidence_ceiling": {"const": "DOMAIN_VERDICT"},
+        "accepted_evidence_count": {"const": 1},
+        "supporting_evidence_count": {"const": 1},
+        "refuting_evidence_count": {"const": 0}
+      }
+    },
+    "disclosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "class",
+        "raw_source_included",
+        "raw_evidence_included",
+        "credentials_included",
+        "internal_reasoning_included",
+        "private_locator_included"
+      ],
+      "properties": {
+        "class": {"const": "PUBLIC_SYNTHETIC"},
+        "raw_source_included": {"const": false},
+        "raw_evidence_included": {"const": false},
+        "credentials_included": {"const": false},
+        "internal_reasoning_included": {"const": false},
+        "private_locator_included": {"const": false}
+      }
+    },
+    "cleanup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["temporary_files_removed", "external_credentials_required"],
+      "properties": {
+        "temporary_files_removed": {"const": true},
+        "external_credentials_required": {"const": false}
+      }
+    },
+    "evidence_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "other_domain_authorities",
+        "private_source_access",
+        "production_deployment",
+        "user_outcome",
+        "paid_outcome",
+        "merge_release"
+      ],
+      "properties": {
+        "other_domain_authorities": {"const": "NOT_EXERCISED"},
+        "private_source_access": {"const": "NOT_EXERCISED"},
+        "production_deployment": {"const": "NOT_EXERCISED"},
+        "user_outcome": {"const": "ABSENT"},
+        "paid_outcome": {"const": "ABSENT"},
+        "merge_release": {"const": "NOT_AUTHORIZED"}
+      }
+    }
+  }
+}

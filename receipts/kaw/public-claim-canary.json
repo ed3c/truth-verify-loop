@@ -1,0 +1,57 @@
+{
+  "authority": {
+    "kind": "DOMAIN_REPOSITORY",
+    "owner": "truth-verify-loop"
+  },
+  "cleanup": {
+    "external_credentials_required": false,
+    "temporary_files_removed": true
+  },
+  "disclosure": {
+    "class": "PUBLIC_SYNTHETIC",
+    "credentials_included": false,
+    "internal_reasoning_included": false,
+    "private_locator_included": false,
+    "raw_evidence_included": false,
+    "raw_source_included": false
+  },
+  "environment": "PUBLIC_SYNTHETIC_CI",
+  "evidence_boundary": {
+    "merge_release": "NOT_AUTHORIZED",
+    "other_domain_authorities": "NOT_EXERCISED",
+    "paid_outcome": "ABSENT",
+    "private_source_access": "NOT_EXERCISED",
+    "production_deployment": "NOT_EXERCISED",
+    "user_outcome": "ABSENT"
+  },
+  "lane": "L5_LIVE_DOMAIN_AUTHORITY_RECEIPT",
+  "policy": {
+    "closure_engine_blob": "3cbbc664e3a28f99be097996dc6e229a6417c581",
+    "closure_schema": "tvl.evidence-closure.v1",
+    "engine": "harness.closure.close_claim",
+    "policy_version": "source-policy-default-v1",
+    "semantic_verifier_schema_blob": "2c9085b66d080abcede3861812d15bdc92986d04",
+    "source_policy_digest": "57d501e8449e889216f214c69b9fa968d0fb80e6d9d6dcee55ba936ac51d1db6"
+  },
+  "receipt_id": "TVL-KAW-PUBLIC-SYNTHETIC-1",
+  "schema": "tvl.kaw-domain-receipt.v1",
+  "subject": {
+    "claim_digest": "49baf11ae87da437f87de2380672fb2d7b92810b2b2ad948f278637433b06c21",
+    "claim_id": "synthetic-sdk-release",
+    "evidence_record_digest": "f9bcdf8feb018a117aafe82552860cdd982a151192446c2ac2ff39a69eb70d59",
+    "source_content_digest": "4cab0a69d575d50f66a87d76ca841370393ca19e4c426e103464617380f14fed",
+    "source_count": 1,
+    "source_freshness": "CURRENT"
+  },
+  "verdict": {
+    "accepted_evidence_count": 1,
+    "as_of": "2026-08-21T00:00:00Z",
+    "closed": true,
+    "closure_digest": "c37d889a8a34210ac284fdfede72f169acaeec9344b944a990d346baaeaec4eb",
+    "evidence_ceiling": "DOMAIN_VERDICT",
+    "expires_at": "2027-08-21T00:00:00Z",
+    "refuting_evidence_count": 0,
+    "state": "SUPPORTED",
+    "supporting_evidence_count": 1
+  }
+}
